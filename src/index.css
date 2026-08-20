@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Sembunyikan Scrollbar secara global untuk elemen dengan kelas .no-scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
