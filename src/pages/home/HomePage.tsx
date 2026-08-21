@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MoveRight, MoveLeft } from 'lucide-react'
+import { MoveUp, MoveDown } from 'lucide-react'
 
 interface HomePageProps {
   onOpenProjects: () => void
@@ -422,7 +422,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
               <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
                 <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                   <span className="inline-block skew-x-12 font-sans text-xs font-black leading-none text-shadow-none">
-                    <span className="skew-x-12 font-sans font-black flex"><MoveLeft size={12} /> <MoveRight size={12} /></span>
+                    <span className="skew-x-12 font-sans font-black flex"><MoveUp size={12} /> <MoveDown size={12} /></span>
                   </span>
                 </span>
                 <span>SELECT</span>
