@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Play, Pause, Volume2, VolumeX, Disc, ChevronRight, ChevronLeft, Music } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, Disc, ChevronRight, ChevronLeft, Music, Maximize } from 'lucide-react'
 
 // Base CDN URL untuk Cloudflare R2
 const R2_SONGS_BASE_URL = 'https://persona-assets.perdafos.my.id/songs'
@@ -425,6 +425,7 @@ interface PersonaAudioPlayerProps {
 }
 
 export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProps) {
+  // Inisialisasi index lagu pertama secara acak
   const [currentIndex, setCurrentIndex] = useState(() =>
     Math.floor(Math.random() * SONGS_DATA.length)
   )
@@ -441,7 +442,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
 
   const currentSong = SONGS_DATA[currentIndex]
 
-  // Track route changes to dynamically toggle theme color
+  // Track route changes
   useEffect(() => {
     const handleLocationChange = () => setPathname(window.location.pathname)
 
@@ -488,6 +489,29 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
       audio.pause()
     }
   }, [])
+
+  // Auto-play listener saat masuk ke Full Screen di Mobile
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFullscreen = Boolean(
+        document.fullscreenElement || (document as any).webkitFullscreenElement
+      )
+      if (isFullscreen && audioRef.current && !isPlaying) {
+        audioRef.current
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch((err) => console.log('Autoplay on fullscreen prevented:', err))
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+    }
+  }, [isPlaying])
 
   // Start autoplay when loading completes
   useEffect(() => {
@@ -546,6 +570,25 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     }
   }
 
+  // Action pemicu Fullscreen sekaligus memainkan musik untuk mobile
+  const handleToggleFullscreenAndPlay = () => {
+    const elem = document.documentElement
+    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+      if (elem.requestFullscreen) {
+        void elem.requestFullscreen().catch(() => {})
+      } else if ((elem as any).webkitRequestFullscreen) {
+        ;(elem as any).webkitRequestFullscreen()
+      }
+    }
+
+    if (audioRef.current && !isPlaying) {
+      void audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {})
+    }
+  }
+
   const handleNextTrack = () => {
     setCurrentIndex((prev) => (prev + 1) % SONGS_DATA.length)
     setIsPlaying(true)
@@ -569,7 +612,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     if (audioRef.current) audioRef.current.currentTime = val
   }
 
-  // Wheel scroll event for desktop
+  // Wheel scroll event untuk desktop
   const handleWheel = (e: React.WheelEvent) => {
     if (e.deltaY > 0) {
       handleNextTrack()
@@ -578,7 +621,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     }
   }
 
-  // Touch gesture handlers for mobile swipe
+  // Touch gesture handlers untuk swipe di mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartYRef.current = e.touches[0].clientY
   }
@@ -673,8 +716,22 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
           onTouchEnd={handleTouchEnd}
           className="fixed right-3 md:right-8 top-1/2 -translate-y-1/2 z-[9999] flex flex-col items-end gap-3 select-none animate-battle-in touch-pan-y"
         >
-          {/* TOP HELPER CONTROLS / COLLAPSE / MUTE BADGE */}
+          {/* TOP HELPER CONTROLS / FULLSCREEN / COLLAPSE / MUTE BADGE */}
           <div className="flex items-center gap-2 pr-2 mb-1">
+            {/* Tombol Fullscreen Mobile */}
+            <button
+              type="button"
+              onClick={handleToggleFullscreenAndPlay}
+              className="flex items-center gap-1 -skew-x-12 border border-black bg-black px-2 py-0.5 text-[0.65rem] font-mono text-white hover:bg-white hover:text-black cursor-pointer md:hidden"
+              style={{ boxShadow: `2px 2px 0 ${themeHex}` }}
+              title="Fullscreen & Play Music"
+            >
+              <span className="skew-x-12 flex items-center gap-1">
+                <Maximize size={12} style={{ color: themeHex }} />
+                <span>FULLSCREEN</span>
+              </span>
+            </button>
+
             <button
               type="button"
               onClick={toggleMute}
@@ -823,7 +880,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
                       />
                       <div className="flex items-center justify-between text-[0.58rem] font-mono text-neutral-300">
                         <span>{formatTime(currentTime)}</span>
-                        {/* Teks petunjuk hanya ditampilkan pada ukuran desktop (md ke atas) */}
+                        {/* Petunjuk scroll hanya tampil di desktop (md ke atas) */}
                         <span className="hidden md:inline text-yellow-400 font-bold uppercase">SCROLL MOUSE ↕ CHANGE SONG</span>
                         <span>{formatTime(duration)}</span>
                       </div>
