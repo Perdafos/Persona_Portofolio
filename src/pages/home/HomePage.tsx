@@ -64,6 +64,23 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
     }
   }
 
+  const handleMenuClick = (index: number, action: () => void) => {
+    const isMobile = window.innerWidth < 768
+
+    if (isMobile) {
+      // Di mobile, jika menu belum aktif (tap pertama)
+      if (activeMenuIndex !== index) {
+        triggerHoverEffect(index)
+        return // Hentikan agar tidak langsung membuka halaman
+      }
+    }
+
+    // Tekanan ke-2 di mobile (atau klik biasa di desktop)
+    setIsSlapping(true)
+    setTimeout(() => setIsSlapping(false), 150)
+    action()
+  }
+
   const handleBackAction = () => {
     triggerHoverEffect(0)
   }
@@ -104,7 +121,6 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
   return (
     <main className="h-dvh w-full overflow-hidden bg-black">
       <style>{`
-      
         @keyframes screenSlap {
           0% { transform: scale(1) translate(0, 0) rotate(0deg); }
           30% { transform: scale(1.015) translate(-4px, 3px) rotate(-0.5deg); }
@@ -228,10 +244,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => triggerHoverEffect(0)}
                           onFocus={() => triggerHoverEffect(0)}
-                          onClick={() => {
-                            triggerHoverEffect(0)
-                            onOpenProjects()
-                          }}
+                          onClick={() => handleMenuClick(0, onOpenProjects)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -269,10 +282,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => triggerHoverEffect(1)}
                           onFocus={() => triggerHoverEffect(1)}
-                          onClick={() => {
-                            triggerHoverEffect(1)
-                            onOpenSkills()
-                          }}
+                          onClick={() => handleMenuClick(1, onOpenSkills)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -308,10 +318,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => triggerHoverEffect(2)}
                           onFocus={() => triggerHoverEffect(2)}
-                          onClick={() => {
-                            triggerHoverEffect(2)
-                            onOpenAbout()
-                          }}
+                          onClick={() => handleMenuClick(2, onOpenAbout)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -346,10 +353,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => triggerHoverEffect(3)}
                           onFocus={() => triggerHoverEffect(3)}
-                          onClick={() => {
-                            triggerHoverEffect(3)
-                            onOpenContact()
-                          }}
+                          onClick={() => handleMenuClick(3, onOpenContact)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
