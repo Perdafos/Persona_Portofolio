@@ -50,14 +50,14 @@ function PersonaActiveBanner() {
 }
 
 export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenContact }: HomePageProps) {
-  // Set default -1 jika di mobile agar tidak ada menu yang aktif otomatis di awal
+  // Inisialisasi -1 untuk mobile agar tidak ada menu yang aktif otomatis
   const [activeMenuIndex, setActiveMenuIndex] = useState(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       return -1
     }
     return 0
   })
-  
+
   const [isSlapping, setIsSlapping] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -69,7 +69,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
     setTimeout(() => setIsSlapping(false), 150)
   }
 
-  // Hover handler hanya berjalan di layar desktop (>= 768px)
+  // Hover khusus desktop
   const handleDesktopHover = (index: number) => {
     if (window.innerWidth >= 768) {
       if (activeMenuIndex !== index) {
@@ -78,22 +78,31 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
     }
   }
 
-  // Handler klik / tap menu
-  const handleMenuClick = (index: number, action: () => void) => {
-    const isMobile = window.innerWidth < 768
+  // Handler Khusus Sentuhan Layar HP (Mobile)
+  const handleTouchMenu = (e: React.TouchEvent, index: number, action: () => void) => {
+    if (window.innerWidth < 768) {
+      // Hentikan simulasi sintetis mouse click bawaan browser
+      e.preventDefault()
 
-    if (isMobile) {
-      // TAP 1: Jika menu belum aktif (termasuk saat pertama kali buka web)
       if (activeMenuIndex !== index) {
-        triggerHoverEffect(index) // Tampilkan efek banner & screen slap
-        return // Tahan navigasi, tidak masuk dulu
+        // TAP 1: Tampilkan Banner + Animasi
+        triggerHoverEffect(index)
+      } else {
+        // TAP 2: Masuk Halaman
+        setIsSlapping(true)
+        setTimeout(() => setIsSlapping(false), 150)
+        action()
       }
     }
+  }
 
-    // TAP 2 di Mobile (atau Klik biasa di Desktop): Buka halaman tujuan
-    setIsSlapping(true)
-    setTimeout(() => setIsSlapping(false), 150)
-    action()
+  // Handler Klik Mouse Khusus PC / Desktop
+  const handleDesktopClick = (index: number, action: () => void) => {
+    if (window.innerWidth >= 768) {
+      setIsSlapping(true)
+      setTimeout(() => setIsSlapping(false), 150)
+      action()
+    }
   }
 
   const handleBackAction = () => {
@@ -257,7 +266,8 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => handleDesktopHover(0)}
-                          onClick={() => handleMenuClick(0, onOpenProjects)}
+                          onTouchEnd={(e) => handleTouchMenu(e, 0, onOpenProjects)}
+                          onClick={() => handleDesktopClick(0, onOpenProjects)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -294,7 +304,8 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => handleDesktopHover(1)}
-                          onClick={() => handleMenuClick(1, onOpenSkills)}
+                          onTouchEnd={(e) => handleTouchMenu(e, 1, onOpenSkills)}
+                          onClick={() => handleDesktopClick(1, onOpenSkills)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -329,7 +340,8 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => handleDesktopHover(2)}
-                          onClick={() => handleMenuClick(2, onOpenAbout)}
+                          onTouchEnd={(e) => handleTouchMenu(e, 2, onOpenAbout)}
+                          onClick={() => handleDesktopClick(2, onOpenAbout)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -363,7 +375,8 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => handleDesktopHover(3)}
-                          onClick={() => handleMenuClick(3, onOpenContact)}
+                          onTouchEnd={(e) => handleTouchMenu(e, 3, onOpenContact)}
+                          onClick={() => handleDesktopClick(3, onOpenContact)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
