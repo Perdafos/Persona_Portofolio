@@ -228,7 +228,7 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
 
         if (mode === 'loading') {
           setShowLoadingText(true)
-          
+
           requestAnimationFrame(() => {
             if (loadingTextRef.current) {
               gsap.fromTo(
@@ -315,7 +315,7 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
                   WebkitTextStroke: '1px rgba(0,0,0,0.8)',
                 }}
               >
-                ヨガタマ ダファ
+                読み込み中
               </div>
 
               <div className="flex items-center gap-2.5 font-mono text-[0.7rem] md:text-xs font-bold tracking-widest text-white/90 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
