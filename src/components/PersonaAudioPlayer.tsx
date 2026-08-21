@@ -425,7 +425,10 @@ interface PersonaAudioPlayerProps {
 }
 
 export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  // 1. Inisialisasi index lagu pertama secara acak dari total daftar lagu
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    Math.floor(Math.random() * SONGS_DATA.length)
+  )
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -438,7 +441,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
 
   const currentSong = SONGS_DATA[currentIndex]
 
-  // Track route changes to dynamically toggle theme color (Blue for Home, Projects, Contact; Red for Skills, About)
+  // Track route changes to dynamically toggle theme color
   useEffect(() => {
     const handleLocationChange = () => setPathname(window.location.pathname)
 
@@ -465,8 +468,9 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     audio.volume = 0.8
     audioRef.current = audio
 
-    const firstSong = SONGS_DATA[0]
-    audio.src = getSongUrl(firstSong.file)
+    // 2. Set audio.src menggunakan indeks acak yang di-generate pada render pertama
+    const initialSong = SONGS_DATA[currentIndex]
+    audio.src = getSongUrl(initialSong.file)
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
     const handleLoadedMetadata = () => setDuration(audio.duration || 0)
