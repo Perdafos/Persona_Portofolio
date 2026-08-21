@@ -23,6 +23,18 @@ function App() {
   const overlayRef = useRef<TransitionHandle | null>(null)
 
   useEffect(() => {
+    console.log(
+      `%c PERDAFOS PERSONA PORTFOLIO %c © 2026 Dafa Ghaitsa. All Rights Reserved. `,
+      'background: #00a0e9; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 2px;',
+      'background: #000; color: #fff; padding: 4px 8px; border-radius: 2px;'
+    )
+    console.log(
+      '%cUnauthorized copying or distribution of this code/design is strictly tracked and prohibited under the project LICENSE.',
+      'color: #888; font-style: italic; font-size: 11px;'
+    )
+  }, [])
+
+  useEffect(() => {
     const handlePopState = () => setPathname(window.location.pathname)
     window.addEventListener('popstate', handlePopState)
 
@@ -77,6 +89,7 @@ function App() {
       />
     )
   }
+
 
   return (
     <DesktopScaler>
