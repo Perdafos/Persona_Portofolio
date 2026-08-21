@@ -50,7 +50,7 @@ function PersonaActiveBanner() {
 }
 
 export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenContact }: HomePageProps) {
-  // Inisialisasi -1 untuk mobile agar tidak ada menu yang aktif otomatis
+  // Inisialisasi -1 untuk mobile agar tidak ada menu yang aktif otomatis di awal
   const [activeMenuIndex, setActiveMenuIndex] = useState(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       return -1
@@ -60,6 +60,9 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
 
   const [isSlapping, setIsSlapping] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  
+  // Ref penanda untuk mencegah event onClick murni terpanggil bersamaan dengan touch
+  const touchedRef = useRef(false)
 
   const menuCount = 4
 
@@ -81,14 +84,18 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
   // Handler Khusus Sentuhan Layar HP (Mobile)
   const handleTouchMenu = (e: React.TouchEvent, index: number, action: () => void) => {
     if (window.innerWidth < 768) {
-      // Hentikan simulasi sintetis mouse click bawaan browser
-      e.preventDefault()
+      // Hentikan penembakan event sintetis bawaan browser
+      if (e.cancelable) e.preventDefault()
+      e.stopPropagation()
+      
+      touchedRef.current = true
+      setTimeout(() => { touchedRef.current = false }, 300)
 
       if (activeMenuIndex !== index) {
-        // TAP 1: Tampilkan Banner + Animasi
+        // TAP 1: Tampilkan Banner + Animasi saja
         triggerHoverEffect(index)
       } else {
-        // TAP 2: Masuk Halaman
+        // TAP 2: Baru masuk halaman
         setIsSlapping(true)
         setTimeout(() => setIsSlapping(false), 150)
         action()
@@ -98,7 +105,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
 
   // Handler Klik Mouse Khusus PC / Desktop
   const handleDesktopClick = (action: () => void) => {
-    if (window.innerWidth >= 768) {
+    if (window.innerWidth >= 768 && !touchedRef.current) {
       setIsSlapping(true)
       setTimeout(() => setIsSlapping(false), 150)
       action()
@@ -177,8 +184,9 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
       `}</style>
 
       <section
-        className={`relative h-screen min-h-svh w-full overflow-hidden transition-transform ${isSlapping ? 'animate-screen-slap' : ''
-          }`}
+        className={`relative h-screen min-h-svh w-full overflow-hidden transition-transform ${
+          isSlapping ? 'animate-screen-slap' : ''
+        }`}
       >
         {isSlapping && (
           <div className="animate-flash pointer-events-none absolute inset-0 z-50 bg-white" />
@@ -266,7 +274,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => handleDesktopHover(0)}
                           onTouchEnd={(e) => handleTouchMenu(e, 0, onOpenProjects)}
-                          onClick={() => handleDesktopClick(0, onOpenProjects)}
+                          onClick={() => handleDesktopClick(onOpenProjects)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -304,7 +312,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => handleDesktopHover(1)}
                           onTouchEnd={(e) => handleTouchMenu(e, 1, onOpenSkills)}
-                          onClick={() => handleDesktopClick(1, onOpenSkills)}
+                          onClick={() => handleDesktopClick(onOpenSkills)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -340,7 +348,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => handleDesktopHover(2)}
                           onTouchEnd={(e) => handleTouchMenu(e, 2, onOpenAbout)}
-                          onClick={() => handleDesktopClick(2, onOpenAbout)}
+                          onClick={() => handleDesktopClick(onOpenAbout)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
@@ -375,7 +383,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => handleDesktopHover(3)}
                           onTouchEnd={(e) => handleTouchMenu(e, 3, onOpenContact)}
-                          onClick={() => handleDesktopClick(3, onOpenContact)}
+                          onClick={() => handleDesktopClick(onOpenContact)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
