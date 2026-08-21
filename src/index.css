@@ -1,4 +1,36 @@
 @import "tailwindcss";
+@import "tailwindcss";
+
+/* Sembunyikan Scrollbar secara global */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Force Font Rendering & Anti-aliasing agar tajam di layar HP */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Font Family Fallback Rule */
+.font-persona {
+  font-family: "Anton", "Archivo Black", Impact, sans-serif;
+}
+
+.font-inter {
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 /* Sembunyikan Scrollbar secara global untuk elemen dengan kelas .no-scrollbar */
 .no-scrollbar::-webkit-scrollbar {
