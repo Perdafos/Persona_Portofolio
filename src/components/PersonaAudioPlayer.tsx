@@ -425,7 +425,6 @@ interface PersonaAudioPlayerProps {
 }
 
 export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProps) {
-  // Inisialisasi index lagu pertama secara acak
   const [currentIndex, setCurrentIndex] = useState(() =>
     Math.floor(Math.random() * SONGS_DATA.length)
   )
@@ -442,7 +441,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
 
   const currentSong = SONGS_DATA[currentIndex]
 
-  // Track route changes
+  // Track route changes via polling / event listeners
   useEffect(() => {
     const handleLocationChange = () => setPathname(window.location.pathname)
 
@@ -454,11 +453,19 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
       handleLocationChange()
     }
 
+    // Polling interval sebagai fallback mutlak saat terjadi navigasi SPA
+    const intervalId = setInterval(() => {
+      if (window.location.pathname !== pathname) {
+        setPathname(window.location.pathname)
+      }
+    }, 100)
+
     return () => {
       window.removeEventListener('popstate', handleLocationChange)
       window.history.pushState = origPushState
+      clearInterval(intervalId)
     }
-  }, [])
+  }, [pathname])
 
   const isBlueTheme = pathname === '/' || pathname === '/projects' || pathname === '/contact'
   const themeHex = isBlueTheme ? '#00A6E8' : '#e60012'
@@ -718,7 +725,6 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
         >
           {/* TOP HELPER CONTROLS / FULLSCREEN / COLLAPSE / MUTE BADGE */}
           <div className="flex items-center gap-2 pr-2 mb-1">
-            {/* Tombol Fullscreen Mobile */}
             <button
               type="button"
               onClick={handleToggleFullscreenAndPlay}
@@ -764,9 +770,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
               return (
                 <div
                   key={`top-${item.song.id}`}
-                  onClick={() => {
-                    handlePrevTrack()
-                  }}
+                  onClick={() => handlePrevTrack()}
                   className="group relative cursor-pointer transition-all duration-200 hover:-translate-x-2 -rotate-[6deg] origin-right"
                 >
                   <div
@@ -880,7 +884,6 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
                       />
                       <div className="flex items-center justify-between text-[0.58rem] font-mono text-neutral-300">
                         <span>{formatTime(currentTime)}</span>
-                        {/* Petunjuk scroll hanya tampil di desktop (md ke atas) */}
                         <span className="hidden md:inline text-yellow-400 font-bold uppercase">SCROLL MOUSE ↕ CHANGE SONG</span>
                         <span>{formatTime(duration)}</span>
                       </div>
@@ -897,9 +900,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
               return (
                 <div
                   key={`bottom-${item.song.id}`}
-                  onClick={() => {
-                    handleNextTrack()
-                  }}
+                  onClick={() => handleNextTrack()}
                   className="group relative cursor-pointer transition-all duration-200 hover:-translate-x-2 rotate-[5deg] origin-right"
                 >
                   <div
