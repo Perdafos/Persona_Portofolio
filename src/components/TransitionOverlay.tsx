@@ -9,7 +9,7 @@ export type TransitionHandle = {
 type Props = {
   videoSelectors?: string[]
   imageUrls?: string[]
-  minLoadingDuration?: number // ms, default 1200
+  minLoadingDuration?: number // ms, default 1000
 }
 
 const PANELS = [
@@ -23,13 +23,13 @@ const clipPolygon = (skew = 14) => {
 }
 
 export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref) => {
-  const { videoSelectors = ['video[data-preload="true"]'], imageUrls = [], minLoadingDuration = 1200 } = props
+  const { videoSelectors = ['video[data-preload="true"]'], imageUrls = [], minLoadingDuration = 1000 } = props
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const panelsRef = useRef<HTMLDivElement[]>([])
   const loadingTextRef = useRef<HTMLDivElement | null>(null)
   const tlRef = useRef<GSAPTimeline | null>(null)
-  const loopTlRef = useRef<GSAPTimeline | null>(null)
+  const pulseTweenRef = useRef<gsap.core.Tween | null>(null)
 
   const [animating, setAnimating] = useState(false)
   const [showLoadingText, setShowLoadingText] = useState(false)
@@ -55,7 +55,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
     },
   }))
 
-  // Escape key: skip loop / fast-forward
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (animating && e.key === 'Escape') {
@@ -73,7 +72,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
     return () => window.removeEventListener('keydown', handler, true)
   }, [animating])
 
-  // Builds a promise that resolves when all target assets are ready
   const waitForAssets = (): Promise<void> => {
     skipRequestedRef.current = false
     const tasks: Promise<void>[] = []
@@ -139,49 +137,31 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
   }
 
   const startLoopingAnimation = () => {
-    if (!panelsRef.current.length) return
-
-    const loopTl = gsap.timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } })
-    loopTlRef.current = loopTl
-
-    panelsRef.current.forEach((panel, i) => {
-      loopTl.to(
-        panel,
-        {
-          scaleX: 1.015,
-          scaleY: 1.01,
-          duration: 0.5,
-          yoyo: true,
-          repeat: 1,
-        },
-        i * 0.12
-      )
-    })
-
-    // Animasi pudar-pudar (breathing opacity) untuk Katakana & Info di Pojok Kiri Bawah
+    // Hanya pulsing pudar opacity pada teks katakana (tanpa membesarkan/memutarkan panel)
     if (loadingTextRef.current) {
-      gsap.to(loadingTextRef.current, {
-        opacity: 0.25,
-        duration: 0.7,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-      })
+      pulseTweenRef.current = gsap.fromTo(
+        loadingTextRef.current,
+        { opacity: 1 },
+        {
+          opacity: 0.35,
+          duration: 0.5,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1,
+        }
+      )
     }
   }
 
   const stopLoopingAnimation = () => {
-    if (loopTlRef.current) {
-      loopTlRef.current.kill()
-      loopTlRef.current = null
+    if (pulseTweenRef.current) {
+      pulseTweenRef.current.kill()
+      pulseTweenRef.current = null
     }
     if (loadingTextRef.current) {
       gsap.killTweensOf(loadingTextRef.current)
       gsap.set(loadingTextRef.current, { opacity: 1 })
     }
-    panelsRef.current.forEach((panel) => {
-      gsap.set(panel, { scaleX: 1, scaleY: 1 })
-    })
   }
 
   const playTransition = ({ mode, targetPath, onMidpoint }: { mode: 'loading' | 'navigate'; targetPath?: string; onMidpoint?: () => void }) => {
@@ -206,10 +186,10 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
       setIsVisible(true)
       setAnimating(true)
 
-      const closeDuration = 0.32
+      const closeDuration = 0.26
       const openDuration = 0.32
-      const stagger = 0.06
-      const navigateHold = 0.25
+      const stagger = 0.045
+      const navigateHold = 0.2
 
       const tl = gsap.timeline({
         onComplete: () => {
@@ -223,18 +203,20 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
 
       tlRef.current = tl
 
+      // 1. Panel menutup rapat
       tl.to(
         panels,
         {
           xPercent: 0,
           opacity: 1,
           duration: closeDuration,
-          ease: 'power3.out',
+          ease: 'power4.out',
           stagger: { each: stagger, from: 'start' },
         },
         0
       )
 
+      // 2. Midpoint saat tertutup
       tl.add(async () => {
         if (onMidpoint) {
           try {
@@ -246,16 +228,19 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
 
         if (mode === 'loading') {
           setShowLoadingText(true)
-          if (loadingTextRef.current) {
-            gsap.fromTo(
-              loadingTextRef.current,
-              { opacity: 0, y: 10 },
-              { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-            )
-          }
+          
+          requestAnimationFrame(() => {
+            if (loadingTextRef.current) {
+              gsap.fromTo(
+                loadingTextRef.current,
+                { opacity: 0 },
+                { opacity: 1, duration: 0.15, ease: 'power2.out' }
+              )
+            }
+            startLoopingAnimation()
+          })
 
           tl.pause()
-          startLoopingAnimation()
 
           const start = performance.now()
           await waitForAssets()
@@ -268,12 +253,13 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
           stopLoopingAnimation()
           tl.resume()
         }
-      }, `>+${closeDuration - 0.02}`)
+      }, closeDuration)
 
       if (mode === 'navigate') {
         tl.to({}, { duration: navigateHold })
       }
 
+      // 3. Panel bergeser keluar membawa teks loading di dalamnya
       tl.to([...panels].reverse(), {
         xPercent: 140,
         opacity: 0,
@@ -312,39 +298,36 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
             transform: 'translateZ(0)',
             willChange: 'transform, opacity',
           }}
-        />
-      ))}
-
-      {/* LOADING ELEMENT DI POJOK KIRI BAWAH DENGAN ANIMASI PUDAR */}
-      {showLoadingText && (
-        <div
-          ref={loadingTextRef}
-          className="absolute bottom-6 left-6 z-[60] flex flex-col items-start gap-1 font-['Anton','Archivo_Black',Impact,sans-serif]"
-          aria-live="polite"
         >
-          {/* KATAKANA / KANJI JEPANG UNTUK YOGATAMA DAFA */}
-          <div
-            style={{
-              color: '#FFFFFF',
-              fontSize: 'clamp(2rem, 5vw, 3.8rem)',
-              lineHeight: 1,
-              letterSpacing: '0.12em',
-              textShadow: '3px 3px 0px rgba(0,0,0,0.9)',
-              WebkitTextStroke: '1px rgba(0,0,0,0.8)',
-            }}
-          >
-            ヨガタマ ダファ
-          </div>
+          {i === 2 && showLoadingText && (
+            <div
+              ref={loadingTextRef}
+              className="absolute bottom-8 left-16 md:left-12 z-[60] flex flex-col items-start gap-1.5 font-['Anton','Archivo_Black',Impact,sans-serif]"
+              aria-live="polite"
+            >
+              <div
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: 'clamp(1.6rem, 3.5vw, 2.8rem)',
+                  lineHeight: 1,
+                  letterSpacing: '0.12em',
+                  textShadow: '3px 3px 0px rgba(0,0,0,0.9)',
+                  WebkitTextStroke: '1px rgba(0,0,0,0.8)',
+                }}
+              >
+                ヨガタマ ダファ
+              </div>
 
-          {/* SUBTEXT ROMAJI & PROGRESS PERCENTAGE */}
-          <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-white/90 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-            <span className="bg-black/80 border border-white/40 px-2 py-0.5 -skew-x-12">
-              <span className="inline-block skew-x-12 text-yellow-300">SYSTEM LOADING...</span>
-            </span>
-            <span>{progress}%</span>
-          </div>
+              <div className="flex items-center gap-2.5 font-mono text-[0.7rem] md:text-xs font-bold tracking-widest text-white/90 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                <span className="bg-black/80 border border-white/40 px-2 py-0.5 -skew-x-12">
+                  <span className="inline-block skew-x-12 text-yellow-300">SYSTEM LOADING...</span>
+                </span>
+                <span>{progress}%</span>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      ))}
     </div>
   )
 })
