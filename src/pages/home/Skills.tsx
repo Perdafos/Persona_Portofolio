@@ -55,11 +55,19 @@ export function SkillsPage({ data = defaultSkillsData, onBackHome }: SkillsPageP
     const skillFillRefs = useRef<Array<Array<HTMLDivElement | null>>>([])
     const videoRef = useRef<HTMLVideoElement | null>(null)
 
+    const handleBackAction = () => {
+        if (onBackHome) {
+            onBackHome()
+        } else {
+            window.history.back()
+        }
+    }
+
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 event.preventDefault()
-                onBackHome ? onBackHome() : window.history.back()
+                handleBackAction()
                 return
             }
 
@@ -204,6 +212,12 @@ export function SkillsPage({ data = defaultSkillsData, onBackHome }: SkillsPageP
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+
+        @media screen and (max-height: 500px) {
+          .mobile-footer-hide-control {
+            display: none !important;
+          }
+        }
       `}</style>
 
             {/* FULLSCREEN BACKGROUND VIDEO */}
@@ -232,7 +246,7 @@ export function SkillsPage({ data = defaultSkillsData, onBackHome }: SkillsPageP
 
             {/* FOREGROUND CONTENT */}
             <div className="relative z-20 flex h-full flex-col justify-between p-4 md:p-8">
-                {/* HEADER SECTION (SAME DESIGN AS PROJECTS PAGE) */}
+                {/* HEADER SECTION */}
                 <header className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <h1 className="flex items-center text-[clamp(2.5rem,6vw,5rem)] uppercase tracking-wider text-black drop-shadow-[4px_4px_0px_rgba(0,0,0,0.8)]">
@@ -245,8 +259,8 @@ export function SkillsPage({ data = defaultSkillsData, onBackHome }: SkillsPageP
                         </h1>
 
                         <button
-                            onClick={() => (onBackHome ? onBackHome() : window.history.back())}
-                            className="hidden sm:flex items-center gap-2 -skew-x-12 bg-black px-3 py-1 font-mono text-sm tracking-widest text-white shadow-[3px_3px_0_rgba(255,255,255,0.8)] transition hover:bg-white hover:text-black"
+                            onClick={handleBackAction}
+                            className="hidden sm:flex items-center gap-2 -skew-x-12 bg-black px-3 py-1 font-mono text-sm tracking-widest text-white shadow-[3px_3px_0_rgba(255,255,255,0.8)] transition hover:bg-white hover:text-black cursor-pointer"
                         >
                             <span className="skew-x-12">ESC · BACK</span>
                         </button>
@@ -308,31 +322,37 @@ export function SkillsPage({ data = defaultSkillsData, onBackHome }: SkillsPageP
                     </div>
                 </section>
 
-                {/* FOOTER NAV CONTROLS (MATCHES PROJECTS PAGE) */}
-                <footer className="flex items-center justify-between pt-2 shrink-0">
-                    <div className="flex cursor-default select-none items-center gap-4 font-mono text-xs uppercase tracking-wider text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
-                        <p className="m-0 flex items-center gap-1.5">
-                            <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                                <span className="skew-x-12 font-sans font-black flex">
-                                    <MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} />
+                {/* FOOTER NAV CONTROLS */}
+                <footer className="flex items-center justify-between shrink-0 pt-2 pb-1 md:pb-2">
+                    <div className="flex cursor-default select-none items-center gap-4 md:gap-6 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-white/90 [text-shadow:0_2px_4px_rgba(0,0,0,0.7)] md:text-[0.78rem]">
+                        <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
+                            <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                                <span className="inline-block skew-x-12 font-sans text-xs font-black leading-none text-shadow-none">
+                                    <span className="skew-x-12 font-sans font-black flex">
+                                        <MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} />
+                                    </span>
                                 </span>
                             </span>
                             <span>SELECT</span>
                         </p>
 
-                        <p className="m-0 flex items-center gap-1.5">
-                            <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                        <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
+                            <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                                 <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ENTER</span>
                             </span>
                             <span>CONFIRM</span>
                         </p>
 
-                        <p className="m-0 flex items-center gap-1.5">
-                            <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                        <button
+                            type="button"
+                            onClick={handleBackAction}
+                            className="m-0 flex cursor-pointer items-center gap-2 border-none bg-transparent p-0 text-white transition-transform active:scale-95"
+                        >
+                            <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                                 <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ESC</span>
                             </span>
                             <span>BACK</span>
-                        </p>
+                        </button>
                     </div>
                 </footer>
             </div>
