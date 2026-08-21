@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MoveUp, MoveDown } from 'lucide-react'
+import { MoveRight, MoveLeft } from 'lucide-react'
 
 interface HomePageProps {
   onOpenProjects: () => void
@@ -50,94 +50,49 @@ function PersonaActiveBanner() {
 }
 
 export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenContact }: HomePageProps) {
-  // Inisialisasi -1 untuk mobile agar tidak ada menu yang aktif otomatis di awal
-  const [activeMenuIndex, setActiveMenuIndex] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      return -1
-    }
-    return 0
-  })
-
+  const [activeMenuIndex, setActiveMenuIndex] = useState(0)
   const [isSlapping, setIsSlapping] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
-  
-  // Ref penanda untuk mencegah event onClick murni terpanggil bersamaan dengan touch
-  const touchedRef = useRef(false)
 
   const menuCount = 4
 
   const triggerHoverEffect = (index: number) => {
-    setActiveMenuIndex(index)
+    if (activeMenuIndex !== index) {
+      setActiveMenuIndex(index)
+    }
+  }
+
+  // FUNGSI UTAMA DENGAN JEDA ANIMASI SLAP & FLASH
+  const handleSelectMenu = (index: number) => {
     setIsSlapping(true)
-    setTimeout(() => setIsSlapping(false), 150)
-  }
-
-  // Hover khusus desktop
-  const handleDesktopHover = (index: number) => {
-    if (window.innerWidth >= 768) {
-      if (activeMenuIndex !== index) {
-        triggerHoverEffect(index)
-      }
-    }
-  }
-
-  // Handler Khusus Sentuhan Layar HP (Mobile)
-  const handleTouchMenu = (e: React.TouchEvent, index: number, action: () => void) => {
-    if (window.innerWidth < 768) {
-      // Hentikan penembakan event sintetis bawaan browser
-      if (e.cancelable) e.preventDefault()
-      e.stopPropagation()
-      
-      touchedRef.current = true
-      setTimeout(() => { touchedRef.current = false }, 300)
-
-      if (activeMenuIndex !== index) {
-        // TAP 1: Tampilkan Banner + Animasi saja
-        triggerHoverEffect(index)
-      } else {
-        // TAP 2: Baru masuk halaman
-        setIsSlapping(true)
-        setTimeout(() => setIsSlapping(false), 150)
-        action()
-      }
-    }
-  }
-
-  // Handler Klik Mouse Khusus PC / Desktop
-  const handleDesktopClick = (action: () => void) => {
-    if (window.innerWidth >= 768 && !touchedRef.current) {
-      setIsSlapping(true)
-      setTimeout(() => setIsSlapping(false), 150)
-      action()
-    }
+    
+    // Beri jeda 180ms agar efek slap/flash selesai terlihat oleh user sebelum pindah halaman
+    setTimeout(() => {
+      setIsSlapping(false)
+      if (index === 0) onOpenProjects()
+      else if (index === 1) onOpenSkills()
+      else if (index === 2) onOpenAbout()
+      else if (index === 3) onOpenContact()
+    }, 180)
   }
 
   const handleBackAction = () => {
-    triggerHoverEffect(window.innerWidth < 768 ? -1 : 0)
+    setActiveMenuIndex(0)
   }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         e.preventDefault()
-        const current = activeMenuIndex < 0 ? 0 : activeMenuIndex
-        const nextIndex = (current + 1) % menuCount
+        const nextIndex = (activeMenuIndex + 1) % menuCount
         triggerHoverEffect(nextIndex)
       } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         e.preventDefault()
-        const current = activeMenuIndex < 0 ? 0 : activeMenuIndex
-        const prevIndex = (current - 1 + menuCount) % menuCount
+        const prevIndex = (activeMenuIndex - 1 + menuCount) % menuCount
         triggerHoverEffect(prevIndex)
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
-        if (activeMenuIndex >= 0) {
-          setIsSlapping(true)
-          setTimeout(() => setIsSlapping(false), 150)
-          if (activeMenuIndex === 0) onOpenProjects()
-          else if (activeMenuIndex === 1) onOpenSkills()
-          else if (activeMenuIndex === 2) onOpenAbout()
-          else if (activeMenuIndex === 3) onOpenContact()
-        }
+        handleSelectMenu(activeMenuIndex)
       } else if (e.key === 'Escape') {
         e.preventDefault()
         handleBackAction()
@@ -153,12 +108,12 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
       <style>{`
         @keyframes screenSlap {
           0% { transform: scale(1) translate(0, 0) rotate(0deg); }
-          30% { transform: scale(1.015) translate(-4px, 3px) rotate(-0.5deg); }
-          70% { transform: scale(0.995) translate(3px, -2px) rotate(0.3deg); }
+          30% { transform: scale(1.025) translate(-6px, 4px) rotate(-1deg); }
+          70% { transform: scale(0.985) translate(4px, -3px) rotate(0.5deg); }
           100% { transform: scale(1) translate(0, 0) rotate(0deg); }
         }
         @keyframes flashAnim {
-          0% { opacity: 0.8; }
+          0% { opacity: 0.9; }
           100% { opacity: 0; }
         }
         @keyframes slideFromLeft {
@@ -166,16 +121,15 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
           100% { transform: translateX(0); opacity: 1; }
         }
         .animate-screen-slap {
-          animation: screenSlap 0.15s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: screenSlap 0.18s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-flash {
-          animation: flashAnim 0.12s ease-out forwards;
+          animation: flashAnim 0.18s ease-out forwards;
         }
         .animate-banner-slide {
           animation: slideFromLeft 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Penyesuaian khusus Landscape Mobile */
         @media screen and (max-height: 500px) {
           .mobile-footer-hide-control {
             display: none !important;
@@ -272,26 +226,26 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                         <button
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
-                          onMouseEnter={() => handleDesktopHover(0)}
-                          onTouchEnd={(e) => handleTouchMenu(e, 0, onOpenProjects)}
-                          onClick={() => handleDesktopClick(onOpenProjects)}
+                          onMouseEnter={() => triggerHoverEffect(0)}
+                          onFocus={() => triggerHoverEffect(0)}
+                          onClick={() => handleSelectMenu(0)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-3 scale-110 bg-sky-600 px-1' : ''}`}>P</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>R</span>
-                              <span className="inline-block transition-transform duration-150">O</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : ''}`}>J</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>E</span>
-                              <span className="inline-block transition-transform duration-150">C</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-sky-600 px-1' : ''}`}>T</span>
-                              <span className="inline-block transition-transform duration-150">S</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-3 scale-110 bg-sky-600 px-1' : 'group-hover:-rotate-3 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>P</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>R</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-2">O</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-black group-hover:px-1'}`}>J</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:-rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>E</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:rotate-3">C</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-sky-600 px-1' : 'group-hover:-rotate-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>T</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:rotate-2">S</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -310,24 +264,24 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                         <button
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
-                          onMouseEnter={() => handleDesktopHover(1)}
-                          onTouchEnd={(e) => handleTouchMenu(e, 1, onOpenSkills)}
-                          onClick={() => handleDesktopClick(onOpenSkills)}
+                          onMouseEnter={() => triggerHoverEffect(1)}
+                          onFocus={() => triggerHoverEffect(1)}
+                          onClick={() => handleSelectMenu(1)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-white px-1 text-black' : ''}`}>S</span>
-                              <span className="inline-block transition-transform duration-150">K</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-red-600 px-1' : ''}`}>I</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : ''}`}>L</span>
-                              <span className="inline-block transition-transform duration-150">L</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-110 bg-white px-1 text-black' : ''}`}>S</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-110 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>S</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-3">K</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-red-600 px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-red-600 group-hover:px-1'}`}>I</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : 'group-hover:-rotate-4 group-hover:bg-black group-hover:px-1'}`}>L</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:rotate-2">L</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-110 bg-white px-1 text-black' : 'group-hover:-rotate-6 group-hover:scale-110 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>S</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -346,23 +300,23 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                         <button
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
-                          onMouseEnter={() => handleDesktopHover(2)}
-                          onTouchEnd={(e) => handleTouchMenu(e, 2, onOpenAbout)}
-                          onClick={() => handleDesktopClick(onOpenAbout)}
+                          onMouseEnter={() => triggerHoverEffect(2)}
+                          onFocus={() => triggerHoverEffect(2)}
+                          onClick={() => handleSelectMenu(2)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-red-600 px-1' : ''}`}>A</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>B</span>
-                              <span className="inline-block transition-transform duration-150">O</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : ''}`}>U</span>
-                              <span className="inline-block transition-transform duration-150">T</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-red-600 px-1' : 'group-hover:-rotate-4 group-hover:scale-110 group-hover:bg-red-600 group-hover:px-1'}`}>A</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>B</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-2">O</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-black group-hover:px-1'}`}>U</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-3">T</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -381,25 +335,25 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                         <button
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
-                          onMouseEnter={() => handleDesktopHover(3)}
-                          onTouchEnd={(e) => handleTouchMenu(e, 3, onOpenContact)}
-                          onClick={() => handleDesktopClick(onOpenContact)}
+                          onMouseEnter={() => triggerHoverEffect(3)}
+                          onFocus={() => triggerHoverEffect(3)}
+                          onClick={() => handleSelectMenu(3)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>C</span>
-                              <span className="inline-block transition-transform duration-150">O</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-sky-600 px-1' : ''}`}>N</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : ''}`}>T</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-3 scale-105 bg-white px-1 text-black' : ''}`}>A</span>
-                              <span className="inline-block transition-transform duration-150">C</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-sky-600 px-1' : ''}`}>T</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>C</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-3">O</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-sky-600 px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>N</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : 'group-hover:-rotate-4 group-hover:bg-black group-hover:px-1'}`}>T</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-3 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-3 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>A</span>
+                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-2">C</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-sky-600 px-1' : 'group-hover:rotate-6 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>T</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -418,11 +372,11 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
           {/* FOOTER CONTROLS */}
           <footer className="flex items-center justify-between shrink-0 pt-2 pb-1 md:pb-2">
             <div className="flex cursor-default select-none items-center gap-4 md:gap-6 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-white/90 [text-shadow:0_2px_4px_rgba(0,0,0,0.7)] md:text-[0.78rem]">
-
+              
               <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
                 <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                   <span className="inline-block skew-x-12 font-sans text-xs font-black leading-none text-shadow-none">
-                    <span className="skew-x-12 font-sans font-black flex"><MoveUp size={12} /> <MoveDown size={12} /></span>
+                    <span className="skew-x-12 font-sans font-black flex"><MoveLeft size={12} /> <MoveRight size={12} /></span>
                   </span>
                 </span>
                 <span>SELECT</span>
