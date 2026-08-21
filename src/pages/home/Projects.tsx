@@ -20,13 +20,25 @@ interface GithubRepo {
     language: string | null
 }
 
-export function ProjectsPage() {
+interface ProjectsPageProps {
+    onBack?: () => void
+}
+
+export function ProjectsPage({ onBack }: ProjectsPageProps) {
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [featuredProjects, setFeaturedProjects] = useState<ProjectItem[]>([])
     const [allRepositories, setAllRepositories] = useState<ProjectItem[]>([])
     const [loading, setLoading] = useState(true)
 
     const itemRefs = useRef<(HTMLDivElement | null)[]>([])
+
+    const handleBackAction = () => {
+        if (onBack) {
+            onBack()
+        } else {
+            window.history.back()
+        }
+    }
 
     useEffect(() => {
         const fetchGithubData = async () => {
@@ -108,7 +120,7 @@ export function ProjectsPage() {
                 }
             } else if (e.key === 'Escape') {
                 e.preventDefault()
-                window.history.back()
+                handleBackAction()
             }
         }
 
@@ -161,6 +173,12 @@ export function ProjectsPage() {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
+
+                @media screen and (max-height: 500px) {
+                    .mobile-footer-hide-control {
+                        display: none !important;
+                    }
+                }
             `}</style>
 
             {/* Layer 1: Moving Stripes Layer */}
@@ -189,8 +207,8 @@ export function ProjectsPage() {
                         </h1>
 
                         <button
-                            onClick={() => window.history.back()}
-                            className="hidden sm:flex items-center gap-2 -skew-x-12 bg-black px-3 py-1 text-sm font-mono tracking-widest text-white shadow-[3px_3px_0_rgba(255,255,255,0.8)] transition hover:bg-white hover:text-black"
+                            onClick={handleBackAction}
+                            className="hidden sm:flex items-center gap-2 -skew-x-12 bg-black px-3 py-1 text-sm font-mono tracking-widest text-white shadow-[3px_3px_0_rgba(255,255,255,0.8)] transition hover:bg-white hover:text-black cursor-pointer"
                         >
                             <span className="skew-x-12">ESC · BACK</span>
                         </button>
@@ -208,7 +226,6 @@ export function ProjectsPage() {
                         <p className="font-mono text-sm tracking-widest text-white">FETCHING GITHUB REPOS...</p>
                     </div>
                 ) : (
-                    /* Ditambahkan px-4 pt-4 pb-6 agar skew & shadow tidak terpotong tepi layar */
                     <div className="no-scrollbar my-auto flex flex-col gap-6 overflow-y-auto px-4 pt-4 pb-6">
 
                         {/* FEATURED (STARRED) */}
@@ -232,7 +249,6 @@ export function ProjectsPage() {
                                                 className={`group relative cursor-pointer transition-all duration-150 ${isSelected ? 'scale-[1.02] z-20' : 'hover:scale-[1.01]'
                                                     }`}
                                             >
-                                                {/* Card Wrapper dengan Skew */}
                                                 <div className="-skew-x-3">
                                                     <div className="absolute -top-3 right-4 z-20 flex items-center gap-1.5 bg-sky-400 px-2 py-0.5 font-mono text-[0.68rem] font-bold tracking-wider text-black border border-black shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                                         {item.tag}
@@ -300,7 +316,6 @@ export function ProjectsPage() {
                                             className={`group relative cursor-pointer transition-all duration-150 ${isSelected ? 'scale-[1.02] z-20' : 'hover:scale-[1.01]'
                                                 }`}
                                         >
-                                            {/* Card Wrapper dengan Skew */}
                                             <div className="-skew-x-3">
                                                 <div className="absolute -top-3 right-4 z-20 flex items-center gap-1.5 bg-black px-2 py-0.5 font-mono text-[0.68rem] font-bold tracking-wider text-white border border-white shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                                     {item.tag}
@@ -345,28 +360,34 @@ export function ProjectsPage() {
                 )}
 
                 {/* FOOTER NAV CONTROLS */}
-                <footer className="flex items-center justify-between pt-2">
-                    <div className="flex cursor-default select-none items-center gap-4 font-mono text-xs uppercase tracking-wider text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
-                        <p className="m-0 flex items-center gap-1.5">
-                            <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                                <span className="skew-x-12 font-sans font-black flex"><MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} /></span>
+                <footer className="flex items-center justify-between shrink-0 pt-2 pb-1 md:pb-2">
+                    <div className="flex cursor-default select-none items-center gap-4 md:gap-6 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-white/90 [text-shadow:0_2px_4px_rgba(0,0,0,0.7)] md:text-[0.78rem]">
+                        <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
+                            <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                                <span className="inline-block skew-x-12 font-sans text-xs font-black leading-none text-shadow-none">
+                                    <span className="skew-x-12 font-sans font-black flex"><MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} /></span>
+                                </span>
                             </span>
                             <span>SELECT</span>
                         </p>
 
-                        <p className="m-0 flex items-center gap-1.5">
-                            <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                        <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
+                            <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                                 <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ENTER</span>
                             </span>
                             <span>CONFIRM</span>
                         </p>
 
-                        <p className="m-0 flex items-center gap-1.5">
-                            <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                        <button
+                            type="button"
+                            onClick={handleBackAction}
+                            className="m-0 flex cursor-pointer items-center gap-2 border-none bg-transparent p-0 text-white transition-transform active:scale-95"
+                        >
+                            <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                                 <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ESC</span>
                             </span>
                             <span>BACK</span>
-                        </p>
+                        </button>
                     </div>
                 </footer>
 

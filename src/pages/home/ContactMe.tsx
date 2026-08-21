@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Send, Mail, ArrowUpRight, MoveLeft, MoveRight, MoveUp, MoveDown } from 'lucide-react'
+import { Send, Mail, ArrowUpRight } from 'lucide-react'
 
 interface ContactPageProps {
     onBack?: () => void
@@ -34,23 +34,29 @@ export function ContactPage({ onBack }: ContactPageProps) {
         console.log('Submitted:', formData)
     }
 
+    const handleBackAction = () => {
+        if (onBack) {
+            onBack()
+        } else {
+            window.history.back()
+        }
+    }
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 e.preventDefault()
-                if (onBack) onBack()
+                handleBackAction()
                 return
             }
 
-            // Jika user sedang mengetik di input/textarea, jangan cegat tombol pengetikan (termasuk WASD & Panah)
             const target = e.target as HTMLElement
             const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'
 
             if (isTyping) {
-                return // Biarkan browser menangani input teks secara normal
+                return
             }
 
-            // Navigasi Atas / Bawah untuk elemen Form saat fokus tidak berada di dalam teks input
             if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
                 e.preventDefault()
                 setSocialIndex(null)
@@ -69,7 +75,6 @@ export function ContactPage({ onBack }: ContactPageProps) {
                 })
             }
 
-            // Navigasi Kiri / Kanan untuk Tombol Quick Link (Email, Github, IG, LinkedIn)
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
                 e.preventDefault()
                 setSocialIndex((prev) => {
@@ -93,6 +98,69 @@ export function ContactPage({ onBack }: ContactPageProps) {
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-sky-950 font-sans text-white select-none">
+            <style>{`
+                .contact-form-scroll::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .contact-form-scroll::-webkit-scrollbar-thumb {
+                    background: #0284c7;
+                    border-radius: 2px;
+                }
+
+                @media screen and (max-height: 500px) {
+                    .mobile-contact-header {
+                        display: none !important;
+                    }
+                    .mobile-contact-middle {
+                        padding-top: 0.2rem !important;
+                        padding-bottom: 0.2rem !important;
+                    }
+                    .mobile-contact-title {
+                        font-size: 1.8rem !important;
+                    }
+                    .mobile-contact-title span {
+                        padding: 1px 6px !important;
+                    }
+                    .mobile-social-container {
+                        padding-top: 0.1rem !important;
+                        gap: 0.25rem !important;
+                    }
+                    .mobile-social-btn {
+                        padding: 2px 6px !important;
+                        font-size: 0.65rem !important;
+                    }
+                    .mobile-contact-card {
+                        padding: 0.65rem !important;
+                        border-width: 3px !important;
+                        max-height: 52vh !important;
+                        overflow-y: auto !important;
+                    }
+                    .mobile-contact-card-title {
+                        font-size: 0.85rem !important;
+                        margin-bottom: 0.25rem !important;
+                        padding-bottom: 0.15rem !important;
+                    }
+                    .mobile-input-field {
+                        padding: 2px 6px !important;
+                        font-size: 0.75rem !important;
+                    }
+                    .mobile-textarea-field {
+                        padding: 2px 6px !important;
+                        font-size: 0.75rem !important;
+                        height: 38px !important;
+                    }
+                    .mobile-submit-btn {
+                        padding: 4px 8px !important;
+                        font-size: 0.75rem !important;
+                    }
+
+                    /* HILANGKAN KONTROL SELECT & CONFIRM DI MOBILE LANDSCAPE */
+                    .mobile-footer-hide-control {
+                        display: none !important;
+                    }
+                }
+            `}</style>
+
             {/* Background Video / Image Frame */}
             <div className="absolute inset-0 z-0">
                 <video
@@ -116,7 +184,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
             <div className="relative z-10 flex min-h-screen flex-col justify-between p-4 md:p-8">
 
                 {/* TOP BAR / HEADER */}
-                <header className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                <header className="mobile-contact-header flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div className="-rotate-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.85)]">
                         <div className="bg-black px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-white border border-white/30">
                             PORTFOLIO // YOGATAMA DAFA
@@ -131,12 +199,12 @@ export function ContactPage({ onBack }: ContactPageProps) {
                 </header>
 
                 {/* MIDDLE SECTION */}
-                <main className="my-auto flex flex-col items-end justify-end pt-6 pb-6">
+                <main className="mobile-contact-middle my-auto flex flex-col items-end justify-end pt-6 pb-6">
                     <div className="w-full max-w-lg space-y-4">
 
                         {/* LARGE TITLE (CONTACT) */}
                         <div className="flex justify-end pr-2 md:pr-4">
-                            <h1 className="flex items-center text-[clamp(2.2rem,4.5vw,4.2rem)] font-extrabold uppercase tracking-wider drop-shadow-[4px_4px_0px_rgba(0,0,0,0.85)]">
+                            <h1 className="mobile-contact-title flex items-center text-[clamp(2.2rem,4.5vw,4.2rem)] font-extrabold uppercase tracking-wider drop-shadow-[4px_4px_0px_rgba(0,0,0,0.85)]">
                                 <span className="inline-block -rotate-6 bg-white px-2.5 py-0.5 text-black">C</span>
                                 <span className="inline-block rotate-3 bg-black px-2.5 py-0.5 text-white">O</span>
                                 <span className="inline-block -rotate-3 bg-white px-2.5 py-0.5 text-black">N</span>
@@ -148,15 +216,14 @@ export function ContactPage({ onBack }: ContactPageProps) {
                         </div>
 
                         {/* QUICK LINK BUTTONS */}
-                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 pr-2 md:pr-4">
+                        <div className="mobile-social-container flex flex-wrap items-center justify-end gap-2 pt-2 pr-2 md:pr-4">
                             {/* EMAIL */}
                             <a
                                 ref={socialRefs[0]}
                                 href="mailto:yogatamadafa9@gmail.com"
                                 onFocus={() => setSocialIndex(0)}
-                                className={`group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${
-                                    socialIndex === 0 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
-                                }`}
+                                className={`mobile-social-btn group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${socialIndex === 0 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
+                                    }`}
                             >
                                 <span className="inline-block skew-x-12 flex items-center gap-1">
                                     EMAIL <Mail className="h-3.5 w-3.5" />
@@ -170,9 +237,8 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                 target="_blank"
                                 rel="noreferrer"
                                 onFocus={() => setSocialIndex(1)}
-                                className={`group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${
-                                    socialIndex === 1 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
-                                }`}
+                                className={`mobile-social-btn group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${socialIndex === 1 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
+                                    }`}
                             >
                                 <span className="inline-block skew-x-12 flex items-center gap-1">
                                     GITHUB <ArrowUpRight className="h-3.5 w-3.5" />
@@ -186,9 +252,8 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                 target="_blank"
                                 rel="noreferrer"
                                 onFocus={() => setSocialIndex(2)}
-                                className={`group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${
-                                    socialIndex === 2 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
-                                }`}
+                                className={`mobile-social-btn group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${socialIndex === 2 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
+                                    }`}
                             >
                                 <span className="inline-block skew-x-12 flex items-center gap-1">
                                     INSTAGRAM <ArrowUpRight className="h-3.5 w-3.5" />
@@ -202,9 +267,8 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                 target="_blank"
                                 rel="noreferrer"
                                 onFocus={() => setSocialIndex(3)}
-                                className={`group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${
-                                    socialIndex === 3 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
-                                }`}
+                                className={`mobile-social-btn group relative flex items-center gap-1.5 -skew-x-12 bg-black px-4 py-1.5 font-['Anton','Archivo_Black',sans-serif] text-sm tracking-wider text-white transition-all border border-white/40 shadow-[3px_3px_0px_rgba(0,0,0,0.9)] focus:outline-none ${socialIndex === 3 ? 'bg-sky-500 text-black scale-105' : 'hover:bg-sky-500 hover:text-black'
+                                    }`}
                             >
                                 <span className="inline-block skew-x-12 flex items-center gap-1">
                                     LINKEDIN{' '}
@@ -216,15 +280,15 @@ export function ContactPage({ onBack }: ContactPageProps) {
                         </div>
 
                         {/* SEND MESSAGE FORM CARD */}
-                        <div className="relative border-4 border-black bg-white p-5 text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.9)]">
-                            <div className="mb-4 border-b-2 border-black pb-2">
+                        <div className="mobile-contact-card relative border-4 border-black bg-white p-5 text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.9)]">
+                            <div className="mobile-contact-card-title mb-4 border-b-2 border-black pb-2">
                                 <h2 className="font-['Anton','Archivo_Black',Impact,sans-serif] text-xl tracking-wider text-black uppercase">
                                     SEND ME A MESSAGE
                                 </h2>
                                 <div className="h-1 w-20 bg-sky-500" />
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-3">
+                            <form onSubmit={handleSubmit} className="mobile-contact-form contact-form-scroll space-y-3">
                                 <div>
                                     <label className="block text-[0.7rem] font-bold tracking-widest text-neutral-800 uppercase">
                                         NAME
@@ -239,7 +303,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                             setSocialIndex(null)
                                         }}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full border-2 border-black bg-neutral-100 px-3 py-1.5 text-sm font-medium text-black transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                        className="mobile-input-field w-full border-2 border-black bg-neutral-100 px-3 py-1.5 text-sm font-medium text-black transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         placeholder="Nama Anda..."
                                     />
                                 </div>
@@ -258,7 +322,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                             setSocialIndex(null)
                                         }}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full border-2 border-black bg-neutral-100 px-3 py-1.5 text-sm font-medium text-black transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                        className="mobile-input-field w-full border-2 border-black bg-neutral-100 px-3 py-1.5 text-sm font-medium text-black transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         placeholder="email@domain.com"
                                     />
                                 </div>
@@ -277,7 +341,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                             setSocialIndex(null)
                                         }}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                        className="w-full border-2 border-black bg-neutral-100 px-3 py-1.5 text-sm font-medium text-black transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
+                                        className="mobile-textarea-field w-full border-2 border-black bg-neutral-100 px-3 py-1.5 text-sm font-medium text-black transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
                                         placeholder="Tulis pesan Anda..."
                                     />
                                 </div>
@@ -290,7 +354,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                                             setFormIndex(3)
                                             setSocialIndex(null)
                                         }}
-                                        className="group relative flex w-full items-center justify-center gap-2 border-2 border-black bg-sky-600 px-4 py-2 font-['Anton','Archivo_Black',sans-serif] tracking-widest text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-black hover:text-white focus:bg-black focus:text-white focus:outline-none active:translate-x-1 active:translate-y-1 active:shadow-none"
+                                        className="mobile-submit-btn group relative flex w-full items-center justify-center gap-2 border-2 border-black bg-sky-600 px-4 py-2 font-['Anton','Archivo_Black',sans-serif] tracking-widest text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-black hover:text-white focus:bg-black focus:text-white focus:outline-none active:translate-x-1 active:translate-y-1 active:shadow-none cursor-pointer"
                                     >
                                         <span>SEND IT</span>
                                         <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -305,26 +369,31 @@ export function ContactPage({ onBack }: ContactPageProps) {
                 {/* FOOTER */}
                 <footer className="flex items-center justify-between pt-2">
                     <div className="flex cursor-default select-none items-center gap-4 font-mono text-xs uppercase tracking-wider text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
-                        <p className="m-0 flex items-center gap-1.5">
+                        <p className="mobile-footer-hide-control m-0 flex items-center gap-1.5">
                             <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                                <span className="skew-x-12 font-sans font-black flex"><MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} /></span>
+                                <span className="skew-x-12 font-sans font-black flex">← → ↑ ↓</span>
                             </span>
                             <span>SELECT</span>
                         </p>
 
-                        <p className="m-0 flex items-center gap-1.5">
+                        <p className="mobile-footer-hide-control m-0 flex items-center gap-1.5">
                             <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                                 <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ENTER</span>
                             </span>
                             <span>CONFIRM</span>
                         </p>
 
-                        <p className="m-0 flex items-center gap-1.5">
+                        {/* ESC / BACK DIBUAT INTERAKTIF (BISA DIKLIK) */}
+                        <button
+                            type="button"
+                            onClick={handleBackAction}
+                            className="m-0 flex cursor-pointer items-center gap-1.5 border-none bg-transparent p-0 text-white transition-transform active:scale-95"
+                        >
                             <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                                 <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ESC</span>
                             </span>
-                            <span>BACK</span>
-                        </p>
+                            <span className="font-mono text-xs uppercase tracking-wider">BACK</span>
+                        </button>
                     </div>
                 </footer>
 

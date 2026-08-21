@@ -25,7 +25,14 @@ export default function About({ onBack }: AboutProps) {
         setTimeout(() => setIsSlapping(false), 150)
     }
 
-    // Keyboard navigation & simple mouse parallax
+    const handleBackAction = () => {
+        if (onBack) {
+            onBack()
+        } else {
+            window.history.back()
+        }
+    }
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
@@ -39,7 +46,7 @@ export default function About({ onBack }: AboutProps) {
             } else if (e.key === 'Escape') {
                 e.preventDefault()
                 triggerSlap()
-                if (onBack) onBack()
+                handleBackAction()
             } else if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
                 triggerSlap()
@@ -63,7 +70,7 @@ export default function About({ onBack }: AboutProps) {
 
     return (
         <div
-            className={`p5-viewport relative h-screen w-screen overflow-hidden bg-[#080808] font-['Impact',_'Arial_Black',_sans-serif] text-white select-none max-md:h-auto max-md:min-h-screen max-md:overflow-y-auto ${isSlapping ? 'animate-screen-slap' : ''
+            className={`p5-viewport relative flex h-screen w-screen flex-col justify-between overflow-hidden bg-[#080808] font-['Anton','Archivo_Black',Impact,sans-serif] text-white select-none p-3 sm:p-5 md:p-8 ${isSlapping ? 'animate-screen-slap' : ''
                 }`}
         >
             <style>{`
@@ -89,10 +96,6 @@ export default function About({ onBack }: AboutProps) {
           from { transform: translateX(-100%); }
           to { transform: translateX(0); }
         }
-        @keyframes popUp {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
 
         .animate-screen-slap {
           animation: screenSlap 0.15s cubic-bezier(0.25, 1, 0.5, 1) forwards;
@@ -109,8 +112,72 @@ export default function About({ onBack }: AboutProps) {
         .animate-slide-bg {
           animation: slideInLeft 0.5s ease-out forwards;
         }
-        .animate-pop-up {
-          animation: popUp 0.4s ease-out forwards;
+
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        /* KHUSUS LANDSCAPE MOBILE (max-height: 500px) */
+        @media screen and (max-height: 500px) {
+          .mobile-footer-hide-control {
+            display: none !important;
+          }
+
+          .mobile-about-title {
+            font-size: 1.8rem !important;
+          }
+
+          /* Wadah Utama Kiri yang Mengetengahkan Kartu Vertikal & Mencegah Crop */
+          .mobile-left-content-wrap {
+            width: 52vw !important;
+            max-height: 62vh !important;
+            overflow-y: auto !important;
+            padding-top: 18px !important;
+            padding-bottom: 12px !important;
+            padding-right: 6px !important;
+            margin-top: auto !important;
+            margin-bottom: auto !important;
+            z-index: 35 !important;
+          }
+
+          .mobile-cards-container {
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            gap: 22px !important;
+          }
+
+          .mobile-card-item {
+            padding: 8px 12px !important;
+            border-width: 3px !important;
+          }
+
+          .mobile-card-title {
+            font-size: 0.72rem !important;
+            margin-top: -20px !important;
+            padding: 1px 6px !important;
+          }
+
+          .mobile-card-text {
+            font-size: 0.65rem !important;
+            line-height: 1.25 !important;
+          }
+
+          .mobile-char-portrait {
+            top: 10px !important;
+            right: 10px !important;
+            height: 85vh !important;
+            width: 40vw !important;
+          }
+
+          .mobile-hide-deco {
+            display: none !important;
+          }
         }
       `}</style>
 
@@ -125,31 +192,39 @@ export default function About({ onBack }: AboutProps) {
                 className="pointer-events-none absolute inset-0 z-[2] opacity-25 bg-[radial-gradient(#080808_2px,transparent_2px)] bg-[size:14px_14px] transition-transform duration-200 ease-out"
                 style={{ transform: `translate(${parallax.x}px, ${parallax.y}px)` }}
             />
-            <div className="pointer-events-none absolute -bottom-[30px] -left-[20px] z-[2] whitespace-nowrap text-[clamp(8rem,20vw,18rem)] leading-[0.8] text-black/35 -rotate-8">
+            <div className="pointer-events-none absolute -bottom-[30px] -left-[20px] z-[2] whitespace-nowrap text-[clamp(8rem,20vw,18rem)] leading-[0.8] text-black/35 -rotate-8 mobile-hide-deco">
                 TAKE YOUR TIME
             </div>
 
             {/* AMBIENT STAR */}
-            <svg className="animate-spin-slow pointer-events-none absolute -top-[40px] -right-[40px] z-[3] h-[260px] w-[260px] opacity-35" viewBox="0 0 200 200" fill="none">
+            <svg className="animate-spin-slow pointer-events-none absolute -top-[40px] -right-[40px] z-[3] h-[260px] w-[260px] opacity-35 mobile-hide-deco" viewBox="0 0 200 200" fill="none">
                 <path d="M100 0L122.451 69.0983H195.106L136.327 111.803L158.779 180.902L100 138.197L41.2215 180.902L63.673 111.803L4.89435 69.0983H77.5486L100 0Z" fill="white" />
             </svg>
 
-            <div className="flex items-center gap-4">
-                <h1 className="animate-pop-up absolute top-[55px] left-[40px] z-[10] flex gap-[4px] text-[clamp(3rem,6vw,5.5rem)] leading-none max-md:top-[65px] max-md:left-[20px]">
-                    <span className="inline-block border-[3px] border-[#080808] bg-white px-[14px] py-[2px] text-[#080808] shadow-[5px_5px_0_#080808] -rotate-6">A</span>
-                    <span className="inline-block border-[3px] border-[#080808] bg-[#080808] px-[14px] py-[2px] text-white shadow-[5px_5px_0_#080808] rotate-4">B</span>
-                    <span className="inline-block border-[3px] border-[#080808] bg-white px-[14px] py-[2px] text-[#080808] shadow-[5px_5px_0_#080808] -rotate-3">O</span>
-                    <span className="inline-block border-[3px] border-[#080808] bg-[#e60012] px-[14px] py-[2px] text-white shadow-[5px_5px_0_#080808] rotate-5">U</span>
-                    <span className="inline-block border-[3px] border-[#080808] bg-white px-[14px] py-[2px] text-[#080808] shadow-[5px_5px_0_#080808] -rotate-2">T</span>
-                </h1>
+            {/* HEADER SECTION */}
+            <header className="relative z-[40] flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-4">
+                    <h1 className="mobile-about-title flex items-center text-[clamp(2.5rem,6vw,5rem)] uppercase tracking-wider text-black drop-shadow-[4px_4px_0px_rgba(0,0,0,0.8)]">
+                        <span className="inline-block -rotate-6 bg-white px-3 py-0.5 text-black">A</span>
+                        <span className="inline-block rotate-3 bg-black px-3 py-0.5 text-white">B</span>
+                        <span className="inline-block -rotate-3 bg-white px-3 py-0.5 text-black">O</span>
+                        <span className="inline-block rotate-6 bg-[#e60012] px-3 py-0.5 text-white">U</span>
+                        <span className="inline-block -rotate-2 bg-white px-3 py-0.5 text-black">T</span>
+                    </h1>
 
-                <button
-                    onClick={() => window.history.back()}
-                    className="hidden sm:flex items-center gap-2 -skew-x-12 bg-black px-3 py-1 text-sm font-mono tracking-widest text-white shadow-[3px_3px_0_rgba(255,255,255,0.8)] transition hover:bg-white hover:text-black"
-                >
-                    <span className="skew-x-12">ESC · BACK</span>
-                </button>
-            </div>
+                    <button
+                        onClick={handleBackAction}
+                        className="hidden sm:flex items-center gap-2 -skew-x-12 bg-black px-3 py-1 font-mono text-sm tracking-widest text-white shadow-[3px_3px_0_rgba(255,255,255,0.8)] transition hover:bg-white hover:text-black cursor-pointer"
+                    >
+                        <span className="skew-x-12">ESC · BACK</span>
+                    </button>
+                </div>
+
+                <div className="hidden lg:block -rotate-1 border-2 border-black bg-white px-3 py-1 font-mono text-xs font-bold text-black shadow-[4px_4px_0_rgba(0,0,0,0.6)]">
+                    MALANG · SISTEM INFORMASI JARINGAN APLIKASI
+                </div>
+            </header>
+
             <div className="absolute top-[145px] right-[0vw] z-[13] -rotate-4 border-[3px] border-[#080808] bg-white px-[18px] py-[6px] text-[0.9rem] tracking-[0.05em] text-[#080808] shadow-[6px_6px_0_#e60012] max-lg:hidden">
                 LOOKING COOL, DEVELOPER!
             </div>
@@ -169,51 +244,55 @@ export default function About({ onBack }: AboutProps) {
                 </div>
             </div>
 
-            <div className="animate-pop-up absolute top-[180px] left-[40px] z-[30] flex w-[min(35vw,480px)] flex-col gap-[35px] max-lg:w-[48vw] max-md:relative max-md:top-auto max-md:left-auto max-md:mx-auto max-md:mt-[20px] max-md:mb-[80px] max-md:w-[90%]">
-                <div
-                    onClick={() => {
-                        triggerSlap()
-                        setActiveCardIndex(0)
-                    }}
-                    className={`relative -rotate-[1.5deg] border-4 border-[#080808] bg-white p-[16px_20px] text-[#080808] transition-all duration-200 cursor-pointer ${activeCardIndex === 0
-                        ? 'scale-105 shadow-[12px_12px_0_#e60012] z-10 opacity-100'
-                        : 'opacity-85 shadow-[8px_8px_0_#080808] hover:opacity-100'
-                        }`}
-                >
-                    <div className="-mt-[30px] mb-[8px] inline-block -rotate-3 -skew-x-8 bg-[#080808] px-[14px] py-[4px] text-[1.2rem] text-white shadow-[4px_4px_0_#e60012]">
-                        <span className="text-[#e60012]">W</span>HO <span className="text-[#e60012]">I</span> AM
+            {/* AREA DITENGAHKAN SECARA VERTIKAL */}
+            <div className="mobile-left-content-wrap no-scrollbar my-auto flex flex-col justify-center">
+                <div className="mobile-cards-container flex w-[min(35vw,480px)] flex-col gap-[35px] pl-2">
+                    {/* Card 0: WHO I AM */}
+                    <div
+                        onClick={() => {
+                            triggerSlap()
+                            setActiveCardIndex(0)
+                        }}
+                        className={`mobile-card-item relative -rotate-[1.5deg] border-4 border-[#080808] bg-white p-[16px_20px] text-[#080808] transition-all duration-200 cursor-pointer ${activeCardIndex === 0
+                            ? 'scale-105 shadow-[12px_12px_0_#e60012] z-10 opacity-100'
+                            : 'opacity-85 shadow-[8px_8px_0_#080808] hover:opacity-100'
+                            }`}
+                    >
+                        <div className="mobile-card-title -mt-[30px] mb-[8px] inline-block -rotate-3 -skew-x-8 bg-[#080808] px-[14px] py-[4px] text-[1.2rem] text-white shadow-[4px_4px_0_#e60012]">
+                            <span className="text-[#e60012]">W</span>HO <span className="text-[#e60012]">I</span> AM
+                        </div>
+                        <div className="mobile-card-text font-['Inter',_'Segoe_UI',_sans-serif] text-[0.85rem] font-bold leading-[1.5] [&>p+p]:mt-[8px]">
+                            {BIO_PARAGRAPHS.map((p, i) => (
+                                <p key={i}>{p}</p>
+                            ))}
+                        </div>
                     </div>
-                    <div className="font-['Inter',_'Segoe_UI',_sans-serif] text-[0.85rem] font-bold leading-[1.5] [&>p+p]:mt-[8px]">
-                        {BIO_PARAGRAPHS.map((p, i) => (
-                            <p key={i}>{p}</p>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Card 1: MY FUN FACTS */}
-                <div
-                    onClick={() => {
-                        triggerSlap()
-                        setActiveCardIndex(1)
-                    }}
-                    className={`relative rotate-[1.5deg] border-4 border-[#080808] bg-white p-[16px_20px] text-[#080808] transition-all duration-200 cursor-pointer ${activeCardIndex === 1
-                        ? 'scale-105 shadow-[12px_12px_0_#e60012] z-10 opacity-100'
-                        : 'opacity-85 shadow-[8px_8px_0_#080808] hover:opacity-100'
-                        }`}
-                >
-                    <div className="-mt-[30px] mb-[8px] inline-block -rotate-3 -skew-x-8 bg-[#080808] px-[14px] py-[4px] text-[1.2rem] text-white shadow-[4px_4px_0_#e60012]">
-                        MY <span className="text-[#e60012]">F</span>UN FACTS
-                    </div>
-                    <div className="font-['Inter',_'Segoe_UI',_sans-serif] text-[0.85rem] font-bold leading-[1.5] [&>p+p]:mt-[8px]">
-                        {FUN_FACT.map((p, i) => (
-                            <p key={i}>{p}</p>
-                        ))}
+                    {/* Card 1: MY FUN FACTS */}
+                    <div
+                        onClick={() => {
+                            triggerSlap()
+                            setActiveCardIndex(1)
+                        }}
+                        className={`mobile-card-item relative rotate-[1.5deg] border-4 border-[#080808] bg-white p-[16px_20px] text-[#080808] transition-all duration-200 cursor-pointer ${activeCardIndex === 1
+                            ? 'scale-105 shadow-[12px_12px_0_#e60012] z-10 opacity-100'
+                            : 'opacity-85 shadow-[8px_8px_0_#080808] hover:opacity-100'
+                            }`}
+                    >
+                        <div className="mobile-card-title -mt-[30px] mb-[8px] inline-block -rotate-3 -skew-x-8 bg-[#080808] px-[14px] py-[4px] text-[1.2rem] text-white shadow-[4px_4px_0_#e60012]">
+                            MY <span className="text-[#e60012]">F</span>UN FACTS
+                        </div>
+                        <div className="mobile-card-text font-['Inter',_'Segoe_UI',_sans-serif] text-[0.85rem] font-bold leading-[1.5] [&>p+p]:mt-[8px]">
+                            {FUN_FACT.map((p, i) => (
+                                <p key={i}>{p}</p>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* CHARACTER PORTRAIT */}
-            <div className="animate-float-character absolute top-[60px] right-[30px] z-[8] h-[82vh] w-[46vw] max-lg:w-[42vw] max-md:relative max-md:mx-auto max-md:mt-[110px] max-md:mb-[20px] max-md:h-[380px] max-md:w-[90%]">
+            {/* FOTO KARAKTER PORTRAIT */}
+            <div className="mobile-char-portrait animate-float-character absolute top-[60px] right-[30px] z-[8] h-[82vh] w-[46vw] max-lg:w-[42vw]">
                 <div className="absolute inset-0 overflow-hidden border-4 border-white bg-[#080808] shadow-[-12px_12px_0_#e60012] [clip-path:polygon(20%_0,100%_0,80%_100%,0_100%)]">
                     <img
                         src="./assets/img/dafa.jpeg"
@@ -221,34 +300,40 @@ export default function About({ onBack }: AboutProps) {
                         className="h-full w-full object-cover object-[80%_center] contrast-[1.12] grayscale-[0.05]"
                     />
                 </div>
-                <img src="/assets/img/icon.png" alt="" className="pointer-events-none absolute -bottom-[20%] -left-[30%] z-[9] flex h-[400px] w-[400px] -rotate-12 items-center justify-center" />
+                <img src="/assets/img/icon.png" alt="" className="pointer-events-none absolute -bottom-[20%] -left-[30%] z-[9] flex h-[320px] w-[320px] -rotate-12 items-center justify-center mobile-hide-deco" />
             </div>
 
-            {/* FOOTER CONTROLS */}
-            <footer className="absolute bottom-4 left-10 z-20 flex items-center justify-between">
-                <div className="flex cursor-default select-none items-center gap-4 font-mono text-xs uppercase tracking-wider text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
-                    <p className="m-0 flex items-center gap-1.5">
-                        <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                            <span className="flex skew-x-12 font-sans font-black">
-                                <MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} />
+            {/* FOOTER NAV CONTROLS */}
+            <footer className="relative z-50 flex items-center justify-between shrink-0 pt-2 pb-1 md:pb-2">
+                <div className="flex cursor-default select-none items-center gap-4 md:gap-6 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-white/90 [text-shadow:0_2px_4px_rgba(0,0,0,0.7)] md:text-[0.78rem]">
+                    
+                    <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
+                        <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                            <span className="inline-block skew-x-12 font-sans text-xs font-black leading-none text-shadow-none">
+                                <span className="skew-x-12 font-sans font-black flex"><MoveLeft size={12} /> <MoveRight size={12} /> <MoveUp size={12} /> <MoveDown size={12} /></span>
                             </span>
                         </span>
                         <span>SELECT</span>
                     </p>
 
-                    <p className="m-0 flex items-center gap-1.5">
-                        <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                            <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none [text-shadow:none]">ENTER</span>
+                    <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
+                        <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                            <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ENTER</span>
                         </span>
                         <span>CONFIRM</span>
                     </p>
 
-                    <p className="m-0 flex items-center gap-1.5">
-                        <span className="inline-flex -skew-x-12 bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                            <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none [text-shadow:none]">ESC</span>
+                    <button
+                        type="button"
+                        onClick={handleBackAction}
+                        className="m-0 flex cursor-pointer items-center gap-2 border-none bg-transparent p-0 text-white transition-transform active:scale-95"
+                    >
+                        <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+                            <span className="inline-block skew-x-12 text-[0.68rem] font-black leading-none text-shadow-none">ESC</span>
                         </span>
                         <span>BACK</span>
-                    </p>
+                    </button>
+
                 </div>
             </footer>
         </div>
