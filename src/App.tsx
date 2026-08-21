@@ -1,3 +1,10 @@
+/**
+ * @file Persona Portfolio Component
+ * @author Dafa Ghaitsa (Perdafos)
+ * @copyright (c) 2026 Dafa Ghaitsa. All rights reserved.
+ * @license MIT - See LICENSE file in project root for full terms.
+ */
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { HomePage } from './pages/home/HomePage'
 import { ProjectsPage } from './pages/home/Projects'
