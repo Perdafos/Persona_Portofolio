@@ -1,32 +1,60 @@
-# React + TypeScript + Vite
+# Persona-Style Interactive Web Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?logo=vite)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?logo=tailwindcss)
+![GSAP](https://img.shields.io/badge/GSAP-3.12-88CE02?logo=greenock)
+![License](https://img.shields.io/badge/License-MIT-red)
 
-Currently, two official plugins are available:
+> "Take Your Time." — Sebuah web portofolio interaktif dan imersif yang terinspirasi penuh dari estetika UI/UX serial game RPG Persona 5 (Atlus).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Fitur Utama
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Persona 5 Visual Styling**: Halftone background, diagonal dynamic banners, skewed badges, serta skema warna ikonik khas Persona.
+- **Dynamic Screen Transitions**: Efek transisi antarhalaman yang dinamis dan lancar menggunakan GSAP Timeline lengkap dengan layar pemuat (loading overlay) beraksen teks Katakana (`ヨガタマ ダファ`).
+- **Integrated Persona Audio Player**: Fitur pemutar musik floating interaktif berbasis gaya Battle Command Menu Persona 5 lengkap dengan soundtrack pilihan serial Persona.
+- **Keyboard & Mouse Navigation**: Navigasi intuitif menggunakan tombol panah (`↑`, `↓`, `←`, `→`), `WASD`, `ENTER`, `ESC`, serta wheel scroll mouse.
+- **Adaptive Desktop Scaler & Mobile Notice**: Fitur pendeteksi orientasi layar yang secara otomatis meminta pengguna di perangkat seluler untuk mengaktifkan mode fullscreen landscape demi kenyamanan antarmuka.
+- **Live GitHub Integration**: Menampilkan repositori GitHub secara otomatis dan real-time melalui GitHub API pada halaman Projects.
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Stack Teknologi
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+- **Frontend Framework**: [React 19](https://react.dev/)
+- **Build Tool**: [Vite 8](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) & Native CSS Animation
+- **Animation Engine**: [GSAP (GreenSock)](https://greensock.com/gsap/) & `@gsap/react`
+- **Icon Pack**: [Lucide React](https://lucide.dev/)
+- **Linter**: [Oxlint](https://oxc.rs/)
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+## Struktur Direktori
+
+```text
+perdafos-persona_portofolio/
+├── src/
+│   ├── components/
+│   │   ├── DesktopScaler.tsx      # Overlay pengunci orientasi landscape untuk mobile
+│   │   ├── PersonaAudioPlayer.tsx # Pemutar musik gaya Battle Command Persona
+│   │   └── TransitionOverlay.tsx  # Layar transisi GSAP + animasi Katakana
+│   ├── config/
+│   │   └── assets.ts              # Konfigurasi CDN & tautan media eksternal
+│   ├── pages/
+│   │   └── home/
+│   │       ├── About.tsx          # Halaman informasi personal / Bio
+│   │       ├── ContactMe.tsx      # Halaman formulir kontak & tautan sosial
+│   │       ├── HomePage.tsx       # Menu utama portofolio
+│   │       ├── Projects.tsx       # Integrasi GitHub Repositories
+│   │       └── Skills.tsx         # Visualisasi skor keahlian / Tech Stack
+│   ├── App.tsx                    # Routing bawaan & manajemen keadaan utama
+│   ├── main.tsx                   # Entry point React
+│   └── index.css                  # Konfigurasi Tailwind CSS & style global
+├── package.json
+├── vite.config.ts
+└── README.md
