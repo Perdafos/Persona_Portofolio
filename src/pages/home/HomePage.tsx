@@ -97,7 +97,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
   }
 
   // Handler Klik Mouse Khusus PC / Desktop
-  const handleDesktopClick = (index: number, action: () => void) => {
+  const handleDesktopClick = (action: () => void) => {
     if (window.innerWidth >= 768) {
       setIsSlapping(true)
       setTimeout(() => setIsSlapping(false), 150)
@@ -177,9 +177,8 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
       `}</style>
 
       <section
-        className={`relative h-screen min-h-svh w-full overflow-hidden transition-transform ${
-          isSlapping ? 'animate-screen-slap' : ''
-        }`}
+        className={`relative h-screen min-h-svh w-full overflow-hidden transition-transform ${isSlapping ? 'animate-screen-slap' : ''
+          }`}
       >
         {isSlapping && (
           <div className="animate-flash pointer-events-none absolute inset-0 z-50 bg-white" />
@@ -411,7 +410,7 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
           {/* FOOTER CONTROLS */}
           <footer className="flex items-center justify-between shrink-0 pt-2 pb-1 md:pb-2">
             <div className="flex cursor-default select-none items-center gap-4 md:gap-6 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-white/90 [text-shadow:0_2px_4px_rgba(0,0,0,0.7)] md:text-[0.78rem]">
-              
+
               <p className="mobile-footer-hide-control m-0 flex items-center gap-2">
                 <span className="inline-flex -skew-x-12 items-center justify-center bg-white px-2 py-0.5 font-bold text-black shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
                   <span className="inline-block skew-x-12 font-sans text-xs font-black leading-none text-shadow-none">
