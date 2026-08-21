@@ -50,70 +50,77 @@ function PersonaActiveBanner() {
 }
 
 export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenContact }: HomePageProps) {
-  const [activeMenuIndex, setActiveMenuIndex] = useState(0)
+  // Set default -1 jika di mobile agar tidak ada menu yang aktif otomatis di awal
+  const [activeMenuIndex, setActiveMenuIndex] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return -1
+    }
+    return 0
+  })
+  
   const [isSlapping, setIsSlapping] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const menuCount = 4
 
   const triggerHoverEffect = (index: number) => {
-    if (activeMenuIndex !== index) {
-      setActiveMenuIndex(index)
-      setIsSlapping(true)
-      setTimeout(() => setIsSlapping(false), 150)
-    }
+    setActiveMenuIndex(index)
+    setIsSlapping(true)
+    setTimeout(() => setIsSlapping(false), 150)
   }
 
-  // Hover handler khusus desktop
+  // Hover handler hanya berjalan di layar desktop (>= 768px)
   const handleDesktopHover = (index: number) => {
     if (window.innerWidth >= 768) {
-      triggerHoverEffect(index)
+      if (activeMenuIndex !== index) {
+        triggerHoverEffect(index)
+      }
     }
   }
 
+  // Handler klik / tap menu
   const handleMenuClick = (index: number, action: () => void) => {
     const isMobile = window.innerWidth < 768
 
     if (isMobile) {
-      // Tap 1: Jika menu belum aktif, aktifkan banner terlebih dahulu
+      // TAP 1: Jika menu belum aktif (termasuk saat pertama kali buka web)
       if (activeMenuIndex !== index) {
-        triggerHoverEffect(index)
-        return
+        triggerHoverEffect(index) // Tampilkan efek banner & screen slap
+        return // Tahan navigasi, tidak masuk dulu
       }
     }
 
-    // Tap 2 di Mobile (atau Klik 1 di Desktop): Buka Halaman
+    // TAP 2 di Mobile (atau Klik biasa di Desktop): Buka halaman tujuan
     setIsSlapping(true)
     setTimeout(() => setIsSlapping(false), 150)
     action()
   }
 
   const handleBackAction = () => {
-    triggerHoverEffect(0)
+    triggerHoverEffect(window.innerWidth < 768 ? -1 : 0)
   }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         e.preventDefault()
-        const nextIndex = (activeMenuIndex + 1) % menuCount
+        const current = activeMenuIndex < 0 ? 0 : activeMenuIndex
+        const nextIndex = (current + 1) % menuCount
         triggerHoverEffect(nextIndex)
       } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         e.preventDefault()
-        const prevIndex = (activeMenuIndex - 1 + menuCount) % menuCount
+        const current = activeMenuIndex < 0 ? 0 : activeMenuIndex
+        const prevIndex = (current - 1 + menuCount) % menuCount
         triggerHoverEffect(prevIndex)
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
-        setIsSlapping(true)
-        setTimeout(() => setIsSlapping(false), 150)
-        if (activeMenuIndex === 0) {
-          onOpenProjects()
-        } else if (activeMenuIndex === 1) {
-          onOpenSkills()
-        } else if (activeMenuIndex === 2) {
-          onOpenAbout()
-        } else if (activeMenuIndex === 3) {
-          onOpenContact()
+        if (activeMenuIndex >= 0) {
+          setIsSlapping(true)
+          setTimeout(() => setIsSlapping(false), 150)
+          if (activeMenuIndex === 0) onOpenProjects()
+          else if (activeMenuIndex === 1) onOpenSkills()
+          else if (activeMenuIndex === 2) onOpenAbout()
+          else if (activeMenuIndex === 3) onOpenContact()
         }
       } else if (e.key === 'Escape') {
         e.preventDefault()
@@ -250,25 +257,24 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => handleDesktopHover(0)}
-                          onFocus={() => handleDesktopHover(0)}
                           onClick={() => handleMenuClick(0, onOpenProjects)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-3 scale-110 bg-sky-600 px-1' : 'group-hover:-rotate-3 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>P</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>R</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-2">O</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-black group-hover:px-1'}`}>J</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:-rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>E</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:rotate-3">C</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-sky-600 px-1' : 'group-hover:-rotate-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>T</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:rotate-2">S</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-3 scale-110 bg-sky-600 px-1' : ''}`}>P</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>R</span>
+                              <span className="inline-block transition-transform duration-150">O</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : ''}`}>J</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>E</span>
+                              <span className="inline-block transition-transform duration-150">C</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-sky-600 px-1' : ''}`}>T</span>
+                              <span className="inline-block transition-transform duration-150">S</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -288,23 +294,22 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => handleDesktopHover(1)}
-                          onFocus={() => handleDesktopHover(1)}
                           onClick={() => handleMenuClick(1, onOpenSkills)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-110 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>S</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-3">K</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-red-600 px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-red-600 group-hover:px-1'}`}>I</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : 'group-hover:-rotate-4 group-hover:bg-black group-hover:px-1'}`}>L</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:rotate-2">L</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-110 bg-white px-1 text-black' : 'group-hover:-rotate-6 group-hover:scale-110 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>S</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-white px-1 text-black' : ''}`}>S</span>
+                              <span className="inline-block transition-transform duration-150">K</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-red-600 px-1' : ''}`}>I</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : ''}`}>L</span>
+                              <span className="inline-block transition-transform duration-150">L</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-6 scale-110 bg-white px-1 text-black' : ''}`}>S</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -324,22 +329,21 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600"
                           onMouseEnter={() => handleDesktopHover(2)}
-                          onFocus={() => handleDesktopHover(2)}
                           onClick={() => handleMenuClick(2, onOpenAbout)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-red-600 px-1' : 'group-hover:-rotate-4 group-hover:scale-110 group-hover:bg-red-600 group-hover:px-1'}`}>A</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>B</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-2">O</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-black group-hover:px-1'}`}>U</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-3">T</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 scale-110 bg-red-600 px-1' : ''}`}>A</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>B</span>
+                              <span className="inline-block transition-transform duration-150">O</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-black px-1' : ''}`}>U</span>
+                              <span className="inline-block transition-transform duration-150">T</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
                               aria-hidden="true"
                             >
                               ▸
@@ -359,24 +363,23 @@ export function HomePage({ onOpenProjects, onOpenSkills, onOpenAbout, onOpenCont
                           type="button"
                           className="group relative inline-flex cursor-pointer items-center border-none bg-transparent p-0 font-['Anton','Archivo_Black',Impact,'Segoe_UI',sans-serif] text-[clamp(1.5rem,3.2vw,2.4rem)] font-bold uppercase leading-none tracking-[0.08em] text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
                           onMouseEnter={() => handleDesktopHover(3)}
-                          onFocus={() => handleDesktopHover(3)}
                           onClick={() => handleMenuClick(3, onOpenContact)}
                         >
                           {isActive && <PersonaActiveBanner />}
 
                           <div className={`relative z-10 flex items-center gap-3 py-2.5 transition-all duration-150 ${isActive ? 'pl-8 pr-12' : 'px-3'}`}>
                             <span className="flex items-center">
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-6 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>C</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-3">O</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-sky-600 px-1' : 'group-hover:rotate-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>N</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : 'group-hover:-rotate-4 group-hover:bg-black group-hover:px-1'}`}>T</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-3 scale-105 bg-white px-1 text-black' : 'group-hover:rotate-3 group-hover:scale-105 group-hover:bg-white group-hover:px-1 group-hover:text-black'}`}>A</span>
-                              <span className="inline-block transition-transform duration-150 group-hover:-rotate-2">C</span>
-                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-sky-600 px-1' : 'group-hover:rotate-6 group-hover:scale-110 group-hover:bg-sky-600 group-hover:px-1'}`}>T</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-105 bg-white px-1 text-black' : ''}`}>C</span>
+                              <span className="inline-block transition-transform duration-150">O</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-4 scale-110 bg-sky-600 px-1' : ''}`}>N</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? '-rotate-4 bg-black px-1' : ''}`}>T</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-3 scale-105 bg-white px-1 text-black' : ''}`}>A</span>
+                              <span className="inline-block transition-transform duration-150">C</span>
+                              <span className={`inline-block transition-transform duration-150 ${isActive ? 'rotate-6 scale-110 bg-sky-600 px-1' : ''}`}>T</span>
                             </span>
 
                             <span
-                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`}
+                              className={`transition duration-150 ${isActive ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}
                               aria-hidden="true"
                             >
                               ▸
