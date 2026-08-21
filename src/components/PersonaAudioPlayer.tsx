@@ -425,7 +425,6 @@ interface PersonaAudioPlayerProps {
 }
 
 export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProps) {
-  // 1. Inisialisasi index lagu pertama secara acak dari total daftar lagu
   const [currentIndex, setCurrentIndex] = useState(() =>
     Math.floor(Math.random() * SONGS_DATA.length)
   )
@@ -438,6 +437,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const hasAttemptedPlayRef = useRef(false)
+  const touchStartYRef = useRef<number | null>(null)
 
   const currentSong = SONGS_DATA[currentIndex]
 
@@ -468,7 +468,6 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     audio.volume = 0.8
     audioRef.current = audio
 
-    // 2. Set audio.src menggunakan indeks acak yang di-generate pada render pertama
     const initialSong = SONGS_DATA[currentIndex]
     audio.src = getSongUrl(initialSong.file)
 
@@ -490,7 +489,7 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     }
   }, [])
 
-  // Start autoplay when loading completes (isLoading becomes false)
+  // Start autoplay when loading completes
   useEffect(() => {
     if (isLoading) return
     if (hasAttemptedPlayRef.current) return
@@ -570,13 +569,35 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     if (audioRef.current) audioRef.current.currentTime = val
   }
 
-  // Wheel scroll event to change songs with infinite loop
+  // Wheel scroll event for desktop
   const handleWheel = (e: React.WheelEvent) => {
     if (e.deltaY > 0) {
       handleNextTrack()
     } else if (e.deltaY < 0) {
       handlePrevTrack()
     }
+  }
+
+  // Touch gesture handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartYRef.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartYRef.current === null) return
+
+    const touchEndY = e.changedTouches[0].clientY
+    const deltaY = touchStartYRef.current - touchEndY
+
+    if (Math.abs(deltaY) > 30) {
+      if (deltaY > 0) {
+        handleNextTrack()
+      } else {
+        handlePrevTrack()
+      }
+    }
+
+    touchStartYRef.current = null
   }
 
   const formatTime = (secs: number) => {
@@ -586,7 +607,6 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
     return `${m}:${s < 10 ? '0' : ''}${s}`
   }
 
-  // Get exact 3 songs: Previous (-1), Active (0), Next (+1)
   const getThreeSongs = () => {
     const total = SONGS_DATA.length
     const prevIndex = (currentIndex - 1 + total) % total
@@ -649,7 +669,9 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
       {!isCollapsed && (
         <div
           onWheel={handleWheel}
-          className="fixed right-3 md:right-8 top-1/2 -translate-y-1/2 z-[9999] flex flex-col items-end gap-3 select-none animate-battle-in"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="fixed right-3 md:right-8 top-1/2 -translate-y-1/2 z-[9999] flex flex-col items-end gap-3 select-none animate-battle-in touch-pan-y"
         >
           {/* TOP HELPER CONTROLS / COLLAPSE / MUTE BADGE */}
           <div className="flex items-center gap-2 pr-2 mb-1">
@@ -801,7 +823,8 @@ export function PersonaAudioPlayer({ isLoading = false }: PersonaAudioPlayerProp
                       />
                       <div className="flex items-center justify-between text-[0.58rem] font-mono text-neutral-300">
                         <span>{formatTime(currentTime)}</span>
-                        <span className="text-yellow-400 font-bold uppercase">SCROLL MOUSE ↕ CHANGE SONG</span>
+                        {/* Teks petunjuk hanya ditampilkan pada ukuran desktop (md ke atas) */}
+                        <span className="hidden md:inline text-yellow-400 font-bold uppercase">SCROLL MOUSE ↕ CHANGE SONG</span>
                         <span>{formatTime(duration)}</span>
                       </div>
                     </div>
