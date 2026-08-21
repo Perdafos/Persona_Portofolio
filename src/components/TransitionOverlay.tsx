@@ -7,29 +7,17 @@ export type TransitionHandle = {
 }
 
 type Props = {
-  // Optional list of video elements / image URLs to wait for during initial load.
-  // If not provided, the component will still wait for document.fonts.ready
-  // and any <video> elements it finds with data-preload="true".
   videoSelectors?: string[]
   imageUrls?: string[]
   minLoadingDuration?: number // ms, default 1200
 }
 
-// Each panel now has its own explicit skew + render order, instead of a
-// formula derived purely from index. Blue is rendered LAST (on top) with a
-// noticeably larger skew so its diagonal cut is clearly visible slicing
-// across the other two panels, matching the reference look.
 const PANELS = [
-  { color: '#000000', skew: 5 }, // black: base layer, subtle diagonal
-  { color: '#FFFFFF', skew: 9 }, // white: mid layer, medium diagonal
-  { color: '#00A6E8', skew: 18 }, // blue: front layer, pronounced diagonal
+  { color: '#000000', skew: 5 },  // black: base layer
+  { color: '#FFFFFF', skew: 9 },  // white: mid layer
+  { color: '#00A6E8', skew: 18 }, // blue: front layer
 ]
 
-// Utility to create a diagonal clip-path polygon that ALWAYS fully covers
-// the panel's box, regardless of skew value. Top edge points stay <= 0%
-// and bottom edge points stay >= 100% on both sides — only the amount of
-// "overhang" differs (left vs right), which is what creates the diagonal
-// look without ever exposing a gap at the corners.
 const clipPolygon = (skew = 14) => {
   return `polygon(0% ${-skew}%, 100% ${0}%, 100% ${100}%, 0% ${100 + skew}%)`
 }
@@ -90,15 +78,13 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
     skipRequestedRef.current = false
     const tasks: Promise<void>[] = []
 
-    // fonts
     if (document.fonts && document.fonts.ready) {
       tasks.push(document.fonts.ready.then(() => undefined))
     }
 
-    // videos
     videoSelectors.forEach((sel) => {
       document.querySelectorAll<HTMLVideoElement>(sel).forEach((video) => {
-        if (video.readyState >= 3) return // HAVE_FUTURE_DATA or more, already ready
+        if (video.readyState >= 3) return
         tasks.push(
           new Promise<void>((resolve) => {
             const done = () => {
@@ -115,7 +101,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
       })
     })
 
-    // images
     imageUrls.forEach((src) => {
       tasks.push(
         new Promise<void>((resolve) => {
@@ -127,8 +112,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
       )
     })
 
-    // Track fake incremental progress so the UI has something to show
-    // even if we can't measure real byte-level progress.
     const total = Math.max(tasks.length, 1)
     let completed = 0
     setProgress(0)
@@ -140,7 +123,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
       })
     )
 
-    // Also let Escape short-circuit everything
     const skipPromise = new Promise<void>((resolve) => {
       const check = () => {
         if (skipRequestedRef.current) {
@@ -162,8 +144,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
     const loopTl = gsap.timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } })
     loopTlRef.current = loopTl
 
-    // Panels gently pulse in sequence (subtle shift + slight scale), giving
-    // a "breathing" look instead of sitting completely static.
     panelsRef.current.forEach((panel, i) => {
       loopTl.to(
         panel,
@@ -178,13 +158,12 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
       )
     })
 
-    // Loading text pulses in parallel
+    // Animasi pudar-pudar (breathing opacity) untuk Katakana & Info di Pojok Kiri Bawah
     if (loadingTextRef.current) {
       gsap.to(loadingTextRef.current, {
-        opacity: 0.55,
-        scale: 0.97,
-        duration: 0.6,
-        ease: 'power1.inOut',
+        opacity: 0.25,
+        duration: 0.7,
+        ease: 'sine.inOut',
         yoyo: true,
         repeat: -1,
       })
@@ -198,7 +177,7 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
     }
     if (loadingTextRef.current) {
       gsap.killTweensOf(loadingTextRef.current)
-      gsap.set(loadingTextRef.current, { opacity: 1, scale: 1 })
+      gsap.set(loadingTextRef.current, { opacity: 1 })
     }
     panelsRef.current.forEach((panel) => {
       gsap.set(panel, { scaleX: 1, scaleY: 1 })
@@ -213,7 +192,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
       const currentPath = window.location.pathname
       const destPath = targetPath || currentPath
 
-      // Use Red (#E60012) for /skills, /about or when navigating from them, otherwise default blue
       const isRedRoute = destPath === '/skills' || destPath === '/about' || currentPath === '/skills' || currentPath === '/about'
       const accentColor = isRedRoute ? '#E60012' : '#00A6E8'
 
@@ -245,7 +223,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
 
       tlRef.current = tl
 
-      // 1) Close panels: white -> blue -> black, staggered
       tl.to(
         panels,
         {
@@ -258,7 +235,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
         0
       )
 
-      // 2) Midpoint: screen fully covered
       tl.add(async () => {
         if (onMidpoint) {
           try {
@@ -273,13 +249,11 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
           if (loadingTextRef.current) {
             gsap.fromTo(
               loadingTextRef.current,
-              { scale: 0.9, y: -6 },
-              { scale: 1, y: 0, duration: 0.25, ease: 'elastic.out(1, 0.6)' }
+              { opacity: 0, y: 10 },
+              { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
             )
           }
 
-          // Pause the master timeline, run a real looping animation while
-          // we wait for actual assets to be ready, then resume to open.
           tl.pause()
           startLoopingAnimation()
 
@@ -296,12 +270,10 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
         }
       }, `>+${closeDuration - 0.02}`)
 
-      // 3) Hold (navigate mode only — loading mode uses real waitForAssets above)
       if (mode === 'navigate') {
         tl.to({}, { duration: navigateHold })
       }
 
-      // 4) Open panels reverse order: black -> blue -> white
       tl.to([...panels].reverse(), {
         xPercent: 140,
         opacity: 0,
@@ -318,7 +290,7 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
     <div
       ref={containerRef}
       aria-hidden={!isVisible && !showLoadingText}
-      className="pointer-events-none fixed inset-0 z-50 flex items-stretch justify-start overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-50 flex items-stretch justify-start overflow-hidden select-none"
       style={{
         pointerEvents: isVisible && (animating || showLoadingText) ? 'auto' : 'none',
         visibility: isVisible ? 'visible' : 'hidden',
@@ -335,10 +307,6 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
           style={{
             background: color,
             position: 'fixed',
-            // Slightly overscan beyond the viewport on every side so that,
-            // combined with the fixed clip-path above, there is never a
-            // sub-pixel seam/gap at the screen edges during the slide
-            // in/out animation.
             inset: '-2% -2%',
             clipPath: clipPolygon(skew),
             transform: 'translateZ(0)',
@@ -347,53 +315,33 @@ export const TransitionOverlay = forwardRef<TransitionHandle, Props>((props, ref
         />
       ))}
 
+      {/* LOADING ELEMENT DI POJOK KIRI BAWAH DENGAN ANIMASI PUDAR */}
       {showLoadingText && (
-        <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center gap-4">
-          <div
-            ref={loadingTextRef}
-            style={{
-              color: '#FFFFFF',
-              fontFamily: "'Anton','Archivo_Black', Impact, 'Segoe UI', sans-serif",
-              fontSize: 'clamp(2rem, 6vw, 5rem)',
-              letterSpacing: '0.08em',
-              textAlign: 'center',
-              textTransform: 'uppercase',
-              WebkitTextStroke: '1px rgba(0,0,0,0.75)',
-            }}
-            aria-live="polite"
-          >
-            YOGATAMA DAFA
-          </div>
-
-          <div
-            style={{
-              width: 'min(280px, 60vw)',
-              height: 6,
-              background: 'rgba(255,255,255,0.25)',
-              border: '1px solid rgba(0,0,0,0.6)',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${progress}%`,
-                background: '#000000',
-                transition: 'width 0.15s ease-out',
-              }}
-            />
-          </div>
-
+        <div
+          ref={loadingTextRef}
+          className="absolute bottom-6 left-6 z-[60] flex flex-col items-start gap-1 font-['Anton','Archivo_Black',Impact,sans-serif]"
+          aria-live="polite"
+        >
+          {/* KATAKANA / KANJI JEPANG UNTUK YOGATAMA DAFA */}
           <div
             style={{
               color: '#FFFFFF',
-              fontFamily: "'Anton','Archivo_Black', Impact, sans-serif",
-              fontSize: '0.9rem',
-              letterSpacing: '0.1em',
-              WebkitTextStroke: '0.5px rgba(0,0,0,0.6)',
+              fontSize: 'clamp(2rem, 5vw, 3.8rem)',
+              lineHeight: 1,
+              letterSpacing: '0.12em',
+              textShadow: '3px 3px 0px rgba(0,0,0,0.9)',
+              WebkitTextStroke: '1px rgba(0,0,0,0.8)',
             }}
           >
-            {progress}%
+            ヨガタマ ダファ
+          </div>
+
+          {/* SUBTEXT ROMAJI & PROGRESS PERCENTAGE */}
+          <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-white/90 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+            <span className="bg-black/80 border border-white/40 px-2 py-0.5 -skew-x-12">
+              <span className="inline-block skew-x-12 text-yellow-300">SYSTEM LOADING...</span>
+            </span>
+            <span>{progress}%</span>
           </div>
         </div>
       )}
